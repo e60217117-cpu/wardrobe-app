@@ -1696,8 +1696,6 @@ function closeSaveDialog(){document.getElementById('saveDialogOverlay').classLis
 async function confirmSaveLook(isDuplicateAllowed = false) {
     const name = document.getElementById('saveDialogName').value;
     const uniqueId = document.getElementById('saveDialogHash').value;
-    const occasion = document.getElementById('saveDialogOccasion').value;
-    const season = document.getElementById('saveDialogSeason').value;
     const fav = document.getElementById('saveDialogFav').checked;
     const often = document.getElementById('saveDialogOften').checked;
     
@@ -1717,30 +1715,50 @@ async function confirmSaveLook(isDuplicateAllowed = false) {
     const newTags = [];
     if(fav) newTags.push('OLIKE_FAV');
     if(often) newTags.push('OLIKE_OFTEN');
-    if(occasion) newTags.push(occasion);
-    if(season) newTags.push(season);
     
+    // Собираем множественные значения из чекбоксов (если они есть в HTML)
+    const selectedOccasions = Array.from(document.querySelectorAll('#saveOccasionGroup input:checked')).map(cb => cb.value);
+    const selectedSeasons = Array.from(document.querySelectorAll('#saveSeasonGroup input:checked')).map(cb => cb.value);
+    const selectedLikes = Array.from(document.querySelectorAll('.like-btn input:checked')).map(cb => cb.value);
+    
+    newTags.push(...selectedOccasions);
+    newTags.push(...selectedSeasons);
+    newTags.push(...selectedLikes);
+
     savedLooks.push({
-        name, items:[...lookItems], occasion, season, fav, often,
+        name, items:[...lookItems], 
+        occasion: selectedOccasions.join(','), 
+        season: selectedSeasons.join(','),
+        fav, often,
         date:new Date().toLocaleDateString(), source: 'local', uniqueId, tags: newTags
     });
     
     const names = getCurrentLookNames();
     const s = JSON.stringify([...names].sort());
     
-    if(document.getElementById('saveDialogPlanTomorrow').checked && !plans.tomorrow.some(p => JSON.stringify(p.items.sort()) === s)) 
-        plans.tomorrow.push({items:[...names], occasion, season});
-    if(document.getElementById('saveDialogPlanDayAfter').checked && !plans.dayafter.some(p => JSON.stringify(p.items.sort()) === s)) 
-        plans.dayafter.push({items:[...names], occasion, season});
-    if(document.getElementById('saveDialogPlanDay3').checked && !plans.day3.some(p => JSON.stringify(p.items.sort()) === s)) 
-        plans.day3.push({items:[...names], occasion, season});
+    if(document.getElementById('saveDialogPlanTomorrow').checked && !plans.tomorrow.some(p => JSON.stringify(p.items.sort()) === s))
+        plans.tomorrow.push({items:[...names], occasion:selectedOccasions.join(','), season:selectedSeasons.join(',')});
+    if(document.getElementById('saveDialogPlanDayAfter').checked && !plans.dayafter.some(p => JSON.stringify(p.items.sort()) === s))
+        plans.dayafter.push({items:[...names], occasion:selectedOccasions.join(','), season:selectedSeasons.join(',')});
+    if(document.getElementById('saveDialogPlanDay3').checked && !plans.day3.some(p => JSON.stringify(p.items.sort()) === s))
+        plans.day3.push({items:[...names], occasion:selectedOccasions.join(','), season:selectedSeasons.join(',')});
         
     savePlans();
     try { localStorage.setItem('saved_looks', JSON.stringify(savedLooks)); } catch(e) {}
-    
     closeSaveDialog();
     showToast(`💾 "${name}" сохранён`);
     renderLooksFullscreen();
+} // <--- ВОТ ЭТОЙ СКОБКИ НЕ ХВАТАЛО! Она закрывает confirmSaveLook
+
+// === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ОКНА ДУБЛИКАТА (ТОЛЬКО ОДИН РАЗ!) ===
+function closeDuplicateLookOverlay() {
+    document.getElementById('duplicateLookOverlay').classList.remove('open');
+    closeSaveDialog(); 
+}
+
+function confirmDuplicateLook() {
+    document.getElementById('duplicateLookOverlay').classList.remove('open');
+    confirmSaveLook(true);
 }
 
 // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ОКНА ДУБЛИКАТА (ТОЛЬКО ОДИН РАЗ!) ===
