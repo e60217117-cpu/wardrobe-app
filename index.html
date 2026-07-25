@@ -813,13 +813,17 @@ let activeFilters={category:new Set(),type:new Set(),season:new Set(),color:new 
 // ️ ЗАМЕНИ ЭТУ ФУНКЦИЮ В БОЛЬШОМ HTML ПЕРЕД ЗАГРУЗКОЙ НА GITHUB
 
 
+// === НАСТРОЙКИ ДЛЯ ГИБРИДНОЙ РАБОТЫ ===
+
+
+// === ФУНКЦИЯ ЗАГРУЗКИ ДАННЫХ (Универсальная) ===
 async function fetchAllItems() {
     showToast('⏳ Загрузка полной базы...');
     
     try {
         let response;
         
-        // ОПРЕДЕЛЯЕМ ГДЕ МЫ ЗАПУЩЕНЫ
+        // ОПРЕДЕЛЯЕМ, ГДЕ МЫ ЗАПУЩЕНЫ
         if (typeof google !== 'undefined' && google.script) {
             // === ВАРИАНТ А: Мы внутри Google Apps Script ===
             response = await new Promise((resolve, reject) => {
@@ -837,7 +841,7 @@ async function fetchAllItems() {
 
         // ОБРАБОТКА ОТВЕТА (одинаковая для обоих вариантов)
         if (response.error) {
-            showToast('❌ ' + response.error);
+            showToast(' ' + response.error);
             return [];
         }
 
@@ -861,7 +865,7 @@ async function fetchAllItems() {
 
     } catch (e) {
         console.error(e);
-        showToast('❌ Ошибка загрузки данных');
+        showToast('❌ Ошибка загрузки данных: ' + e.message);
         return [];
     }
 }
