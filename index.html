@@ -72,30 +72,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .look-clear-btn{width:32px;height:32px;border-radius:8px;border:1px solid #ffcdd2;background:#ffebee;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--red)}
 .look-clear-btn:hover{background:#ffcdd2}
 .look-close{background:none;border:none;font-size:24px;cursor:pointer;color:#999}
-    /* СТИЛЬ ДЛЯ НОВОЙ КНОПКИ "У" В ШАПКЕ КОНСТРУКТОРА */
-.look-manage-top-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    background: #fff;
-    color: var(--darkblue);
-    font-weight: bold;
-    font-size: 14px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 6px;
-    transition: all 0.2s;
-}
-
-.look-manage-top-btn:hover {
-    background: var(--darkblue);
-    color: #fff;
-    border-color: var(--darkblue);
-}
-
 /* === ИСПРАВЛЕННЫЙ КОНСТРУКТОР (БЕЗ НАЛОЖЕНИЯ) === */
 .look-list {
     flex: 1;
@@ -628,7 +604,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 </div>
 <div class="look-sidebar" id="lookSidebar">
 <div class="look-header">
-    <button class="look-manage-top-btn" onclick="toggleManageMenu()" title="Управление"
 <div class="look-title">👗 Конструктор</div>
 <div class="look-header-actions">
 <button class="look-move-btn" id="moveUpBtn" onclick="event.stopPropagation();moveSelectedItemUp()" disabled>⬆️</button>
