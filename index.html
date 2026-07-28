@@ -789,7 +789,7 @@ const CACHE_CONFIG = { KEY_DATA: 'wardrobe_v69_meta_cache', KEY_VERSION: 'wardro
     
 
 // ️ ДОБАВЬ ЭТУ СТРОКУ ⬇️
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbySXvxKvKqbs7o9qr_6oPG4QL90TdD4EVGs6oGK_-IVsi4W4mkeG2kDy8L0dJKiyPxzHQ/exec';
+const GAS_WEB_APP_URL = ''; // Заполняется автоматически через API
 class WardrobeCache {
     constructor() { this.data = null; this.isReady = false; }
     hasValidCache() { try { const v = localStorage.getItem(CACHE_CONFIG.KEY_VERSION); const t = localStorage.getItem(CACHE_CONFIG.KEY_SYNC_TIME); if (!v || v !== CACHE_CONFIG.VERSION || !t) return false; return (Date.now() - new Date(t).getTime()) < CACHE_CONFIG.MAX_AGE_HOURS * 3600000; } catch { return false; } }
