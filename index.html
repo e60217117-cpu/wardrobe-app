@@ -818,26 +818,6 @@ let activeFilters={category:new Set(),type:new Set(),season:new Set(),color:new 
 
 
 // === ФУНКЦИЯ ЗАГРУЗКИ ДАННЫХ (Универсальная) ===
-// === УНИВЕРСАЛЬНЫЙ ВЫЗОВ СЕРВЕРНЫХ ФУНКЦИЙ ===
-async function callServer(functionName, payload) {
-    // ВАРИАНТ А: Мы внутри Google Apps Script
-    if (typeof google !== 'undefined' && google.script) {
-        return new Promise((resolve, reject) => {
-            google.script.run
-                .withSuccessHandler(resolve)
-                .withFailureHandler(reject)
-                [functionName](payload);
-        });
-    } 
-    // ВАРИАНТ Б: Мы на GitHub Pages
-    else {
-        const res = await fetch(GAS_WEB_APP_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: functionName, data: payload })
-        });
-        return await res.json();
-    }
-}
 async function fetchAllItems() {
     showToast('⏳ Загрузка полной базы...');
     
@@ -1886,29 +1866,39 @@ async function addLookToDatabaseDirect(idx) {
     if (!look) { showToast('⚠️ Образ не найден'); return; }
     
     showToast('⏳ Сохраняю в таблицу...');
+    
     try {
-        const response = await callServer('addLookToDatabase', {
-            uniqueId: look.uniqueId,
-            name: look.name,
-            items: look.items,
-            tags: look.tags || [],
-            source: 'local_direct'
-        });
+        // Вызываем серверную функцию
+        google.script.run
+            .withSuccessHandler(function(response) {
+                if (response.error) {
+                    showToast('❌ Ошибка: ' + response.error);
+                } else {
+                    if (response.alreadyExists) {
+                        showToast('ℹ️ Такой образ уже есть в таблице');
+                    } else {
+                        showToast('✅ Образ сохранен в таблицу!');
+                    }
+                }
+                // Закрываем меню в любом случае
+                document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
+            })
+            .withFailureHandler(function(err) {
+                console.error("Ошибка GAS:", err);
+                showToast('❌ Ошибка соединения с сервером');
+                document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
+            })
+            .addLookToDatabase({
+                uniqueId: look.uniqueId,
+                name: look.name,
+                items: look.items, // Отправляем как есть, сервер сам очистит
+                tags: look.tags || [],
+                source: 'local_direct'
+            });
 
-        if (response.error) {
-            showToast(' Ошибка: ' + response.error);
-        } else {
-            if (response.alreadyExists) {
-                showToast('ℹ️ Такой образ уже есть в таблице');
-            } else {
-                showToast('✅ Образ сохранен в таблицу!');
-            }
-        }
     } catch (e) {
         console.error(e);
-        showToast('❌ Неожиданная ошибка соединения');
-    } finally {
-        document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
+        showToast('❌ Неожиданная ошибка');
     }
 }
 
@@ -2046,46 +2036,54 @@ function closeEditTagsModal() {
 
 async function saveEditedTags() {
     if (currentLookIdx === -1) return;
+    
     const checkboxes = document.querySelectorAll('#editTagsContent input:checked');
     const newTags = Array.from(checkboxes).map(cb => cb.value);
-    const look = savedLooks[currentLookIdx];
     
+    const look = savedLooks[currentLookIdx];
     showToast('⏳ Сохраняю образ и теги...');
-    try {
-        // ШАГ 1: Сохраняем/обновляем образ
-        const saveRes = await callServer('addLookToDatabase', {
+    
+    // ШАГ 1: Сначала сохраняем/обновляем образ в Saved_Looks
+    google.script.run
+        .withSuccessHandler(function(saveRes) {
+            if (saveRes.error) {
+                showToast('❌ Ошибка сохранения образа: ' + saveRes.error);
+                return;
+            }
+            
+            // ШАГ 2: Если образ сохранился успешно, обновляем теги
+            google.script.run
+                .withSuccessHandler(function(tagRes) {
+                    if (tagRes.error) {
+                        showToast('❌ Образ сохранен, но ошибка тегов: ' + tagRes.error);
+                    } else {
+                        // Обновляем локальные данные
+                        look.tags = newTags;
+                        localStorage.setItem('saved_looks', JSON.stringify(savedLooks));
+                        renderLooksFullscreen();
+                        closeEditTagsModal();
+                        showToast('✅ Образ и теги обновлены!');
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    showToast('❌ Образ сохранен, но ошибка тегов');
+                    console.error(err);
+                })
+                .updateLookTagsDirect(look.uniqueId, newTags);
+                
+        })
+        .withFailureHandler(function(err) {
+            showToast('❌ Ошибка сохранения образа');
+            console.error(err);
+        })
+        .addLookToDatabase({
             uniqueId: look.uniqueId,
             name: look.name,
             items: look.items,
-            tags: newTags,
+            tags: newTags, // Передаем уже новые теги сразу
             source: 'local_direct'
         });
-
-        if (saveRes.error) {
-            showToast(' Ошибка сохранения образа: ' + saveRes.error);
-            return;
-        }
-
-        // ШАГ 2: Обновляем теги
-        const tagRes = await callServer('updateLookTagsDirect', {
-            lookId: look.uniqueId,
-            newTagsArray: newTags
-        });
-
-        if (tagRes.error) {
-            showToast(' Образ сохранен, но ошибка тегов: ' + tagRes.error);
-        } else {
-            look.tags = newTags;
-            localStorage.setItem('saved_looks', JSON.stringify(savedLooks));
-            renderLooksFullscreen();
-            closeEditTagsModal();
-            showToast('✅ Образ и теги обновлены!');
-        }
-    } catch (e) {
-        console.error(e);
-        showToast('❌ Ошибка соединения с сервером');
-    }
-}
+}// === ЛОГИКА РЕДАКТИРОВАНИЯ ВЕЩИ ===// === ЛОГИКА РЕДАКТИРОВАНИЯ ВЕЩИ ===
 
 
 function openEditItemModal() {
