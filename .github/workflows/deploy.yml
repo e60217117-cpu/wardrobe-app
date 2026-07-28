@@ -2,8 +2,9 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main ] # Запускать при каждом обновлении в ветке main
 
+# Разрешения для деплоя на GitHub Pages
 permissions:
   contents: read
   pages: write
@@ -13,21 +14,22 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Inject Secrets
+      - name: Inject Secret into HTML
         run: |
-          sed -i "s|const GAS_WEB_APP_URL = ''|const GAS_WEB_APP_URL = '${{ vars.GAS_WEB_APP_URL }}'|" index.html
-
+          # Находим строку с заглушкой и заменяем её на реальный секрет из настроек
+          sed -i "s|const GAS_WEB_APP_URL = ''|const GAS_WEB_APP_URL = '${{ secrets.GAS_WEB_APP_URL }}'|" index.html
+      
       - name: Setup Pages
         uses: actions/configure-pages@v4
         
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
-
+          path: '.' # Деплоим всё содержимое корня
+      
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
