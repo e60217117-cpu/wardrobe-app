@@ -1129,7 +1129,8 @@ function resetLooksFilters(){ lfFav=false;lfOften=false;lfNoTags=false;lfOccasio
         searchInput.value = '';
         lookItemSearchQuery = '';
     }
-    // ========================================== looksSlideIndex=0;initLooksFiltersUI();renderLooksFullscreen();updateLooksFilterCount();checkLooksPresetMatch();showToast(' Фильтры сброшены') }
+    // ==========================================
+     looksSlideIndex=0;initLooksFiltersUI();renderLooksFullscreen();updateLooksFilterCount();checkLooksPresetMatch();showToast(' Фильтры сброшены') }
 
 document.addEventListener('click',e=>{ if(!e.target.closest('.btn-wear')&&!e.target.closest('.when-menu'))document.getElementById('whenMenu').classList.remove('open'); if(!e.target.closest('.fullscreen-look-action-btn.wear')&&!e.target.closest('.look-wear-menu'))document.querySelectorAll('.look-wear-menu').forEach(m=>m.classList.remove('open')); if(!e.target.closest('.look-manage-btn')&&!e.target.closest('.manage-menu')){closeManageMenu()} if(!e.target.closest('.plan-manage-wrap'))document.getElementById('planManageMenu').classList.remove('open'); if(!e.target.closest('.fullscreen-look-action-btn.manage') && !e.target.closest('.looks-actions-menu-inline')){ document.querySelectorAll('.looks-actions-menu-inline').forEach(m=>m.classList.remove('open')); } });
 
