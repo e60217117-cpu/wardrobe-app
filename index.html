@@ -664,6 +664,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="looks-filter-sidebar" id="looksFilterSidebar">
 <div class="looks-filter-header"><button class="looks-filter-close" onclick="toggleLooksFilters()">✕</button><div class="looks-filter-title">Фильтры образов</div></div>
 <button class="looks-filter-reset" onclick="resetLooksFilters()">🔄 Сбросить фильтры</button>
+<!-- НОВОЕ ПОЛЕ ПОИСКА ВЕЩИ В ОБРАЗАХ -->
+<div style="margin-bottom:15px;">
+    <input type="text" id="lookItemSearchInput" placeholder="🔍 Найти вещь в образе..." 
+           style="width:100%;padding:8px 12px;border:1px solid #eee;border-radius:10px;font-size:13px;box-sizing:border-box;background:#fafafa;">
+</div>
+<!-- ========================================== -->
 <div class="looks-preset-controls">
     <button class="looks-preset-save-btn" onclick="saveLooksPreset()">💾 Сохранить</button>
     <button class="looks-preset-load-btn" id="loadLooksPresetBtn" onclick="loadLooksPreset()">⚡ Применить</button>
@@ -1117,7 +1123,13 @@ function checkLooksPresetMatch(){ const p=JSON.parse(localStorage.getItem('looks
 function saveLooksPreset(){ const s = { lfFav, lfOften, lfNoTags, lfLocalOnly, lfOccasions: Array.from(lfOccasions), lfSeasons: Array.from(lfSeasons), lfLikes: Array.from(lfLikes) }; localStorage.setItem('looks_filter_preset', JSON.stringify(s)); document.getElementById('loadLooksPresetBtn').classList.add('visible'); checkLooksPresetMatch(); showToast('💾 Настройки фильтров образов сохранены'); }
 function loadLooksPreset(){ try{ const p=JSON.parse(localStorage.getItem('looks_filter_preset')); if(!p) return; lfFav = !!p.lfFav; lfOften = !!p.lfOften; lfNoTags = !!p.lfNoTags; lfLocalOnly = !!p.lfLocalOnly; lfOccasions = new Set(p.lfOccasions || []); lfSeasons = new Set(p.lfSeasons || []); lfLikes = new Set(p.lfLikes || []); looksSlideIndex=0; initLooksFiltersUI(); renderLooksFullscreen(); updateLooksFilterCount(); checkLooksPresetMatch(); showToast(' Настройки фильтров образов применены'); }catch(e){console.error(e);} }
 function toggleLooksFilters(){document.getElementById('looksFilterSidebar').classList.toggle('open')}
-function resetLooksFilters(){ lfFav=false;lfOften=false;lfNoTags=false;lfOccasion='';lfSeason='';lfLocalOnly=false;lfLike=''; lfOccasions.clear(); lfSeasons.clear(); lfLikes.clear(); looksSlideIndex=0;initLooksFiltersUI();renderLooksFullscreen();updateLooksFilterCount();checkLooksPresetMatch();showToast(' Фильтры сброшены') }
+function resetLooksFilters(){ lfFav=false;lfOften=false;lfNoTags=false;lfOccasion='';lfSeason='';lfLocalOnly=false;lfLike=''; lfOccasions.clear(); lfSeasons.clear(); lfLikes.clear();// === НОВАЯ СТРОКА: Очищаем поле поиска и саму переменную ===
+    const searchInput = document.getElementById('lookItemSearchInput');
+    if (searchInput) {
+        searchInput.value = '';
+        lookItemSearchQuery = '';
+    }
+    // ========================================== looksSlideIndex=0;initLooksFiltersUI();renderLooksFullscreen();updateLooksFilterCount();checkLooksPresetMatch();showToast(' Фильтры сброшены') }
 
 document.addEventListener('click',e=>{ if(!e.target.closest('.btn-wear')&&!e.target.closest('.when-menu'))document.getElementById('whenMenu').classList.remove('open'); if(!e.target.closest('.fullscreen-look-action-btn.wear')&&!e.target.closest('.look-wear-menu'))document.querySelectorAll('.look-wear-menu').forEach(m=>m.classList.remove('open')); if(!e.target.closest('.look-manage-btn')&&!e.target.closest('.manage-menu')){closeManageMenu()} if(!e.target.closest('.plan-manage-wrap'))document.getElementById('planManageMenu').classList.remove('open'); if(!e.target.closest('.fullscreen-look-action-btn.manage') && !e.target.closest('.looks-actions-menu-inline')){ document.querySelectorAll('.looks-actions-menu-inline').forEach(m=>m.classList.remove('open')); } });
 
@@ -2592,6 +2604,35 @@ async function saveEditedItem() {
         saveBtn.textContent = 'Сохранить';
     }
 }
+// === ПОИСК ОБРАЗОВ ПО СОСТАВУ ===
+let lookItemSearchQuery = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('lookItemSearchInput');
+    if (input) {
+        input.addEventListener('input', (e) => {
+            lookItemSearchQuery = e.target.value.toLowerCase().trim();
+            looksSlideIndex = 0; // Сброс на первый образ при поиске
+            renderLooksFullscreen();
+        });
+    }
+});
+
+// Модифицируем функцию getFilteredLooks, чтобы она учитывала новый поиск
+const originalGetFilteredLooks = getFilteredLooks;
+getFilteredLooks = function() {
+    let f = originalGetFilteredLooks(); // Получаем уже отфильтрованный по тегам список
+    
+    if (lookItemSearchQuery) {
+        f = f.filter(look => {
+            // Извлекаем имена вещей из образа
+            const names = extractNames(look.items);
+            // Проверяем, содержит ли какое-либо имя поисковый запрос
+            return names.some(name => name.toLowerCase().includes(lookItemSearchQuery));
+        });
+    }
+    return f;
+};
 </script>
 </body>
 </html>
