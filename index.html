@@ -2388,87 +2388,70 @@ function closeEditItemModal() {
 
 async function saveEditedItem() {
     if (!currentEditItemName) return;
-    
-    // Проверка обязательных полей
-    if (!editItemState.status || !editItemState.place || !editItemState.category || !editItemState.type || !editItemState.color) {
-        showToast('️ Заполните все обязательные поля!');
+    if (!editItemState.status || !editItemState.place) {
+        showToast('️ Выберите статус и место!');
         return;
     }
-
+    
     const saveBtn = document.getElementById('editItemSaveBtn');
     saveBtn.disabled = true;
     saveBtn.textContent = 'Сохраняю...';
-
-    // Обработка комментария
-    const commentInput = document.getElementById('itemCommentInput');
-    const commentText = commentInput ? commentInput.value.trim() : '';
-    editItemState.tags = editItemState.tags.filter(t => !t.startsWith('NOTE_'));
-    if (commentText) editItemState.tags.push('NOTE_' + commentText);
-
+    
     try {
-        let res;
-
-        // ОПРЕДЕЛЯЕМ ГДЕ МЫ ЗАПУЩЕНЫ
-        if (typeof google !== 'undefined' && google.script) {
-            // === ВАРИАНТ А: Внутри Google Apps Script ===
-            res = await new Promise((resolve, reject) => {
-                google.script.run
-                    .withSuccessHandler(resolve)
-                    .withFailureHandler(reject)
-                    .updateItemDetailsDirect(
-                        currentEditItemName,
-                        editItemState.status,
-                        editItemState.place,
-                        editItemState.category,
-                        editItemState.type,
-                        editItemState.color,
-                        editItemState.tags
-                    );
-            });
-        } else {
-            // === ВАРИАНТ Б: На GitHub Pages (через fetch) ===
-            const payload = {
-                action: 'updateItem',
-                itemName: currentEditItemName,
-                status: editItemState.status,
-                place: editItemState.place,
-                category: editItemState.category,
-                type: editItemState.type,
-                color: editItemState.color,
-                tags: editItemState.tags
-            };
-
-            const response = await fetch(GAS_WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload),
-                headers: { 'Content-Type': 'application/json' }
-            });
-            
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            res = await response.json();
+        // === ОБРАБОТКА КОММЕНТАРИЯ ПЕРЕД СОХРАНЕНИЕМ ===
+        const commentInput = document.getElementById('itemCommentInput');
+        const commentText = commentInput ? commentInput.value.trim() : '';
+        
+        // Удаляем старый комментарий из массива тегов
+        editItemState.tags = editItemState.tags.filter(t => !t.startsWith('NOTE_'));
+        
+        // Добавляем новый, если поле не пустое
+        if (commentText) {
+            editItemState.tags.push('NOTE_' + commentText);
         }
+        // ==============================================
 
-        // ОБРАБОТКА РЕЗУЛЬТАТА (одинаковая для обоих вариантов)
+        const res = await new Promise((resolve, reject) => {
+            google.script.run
+                .withSuccessHandler(resolve)
+                .withFailureHandler(reject)
+                .updateItemDetailsDirect(
+                    currentEditItemName, 
+                    editItemState.status, 
+                    editItemState.place,
+                    editItemState.category, // ✅ НОВОЕ
+                    editItemState.type,     // ✅ НОВОЕ
+                    editItemState.color,    // ✅ НОВОЕ 
+                    editItemState.tags // Сюда передается обновленный массив с NOTE_
+                );
+        });
+
         if (res.error) {
             showToast('❌ ' + res.error);
         } else {
+            // Обновляем локальные данные вещи
             const item = data.find(i => i.name === currentEditItemName);
             if (item) {
                 item.status = res.status;
                 item.place = res.place;
-                item.category = res.category;
-                item.type = res.type;
-                item.color = res.color;
+                item.category = res.category; // ✅ НОВОЕ
+                item.type = res.type;         // ✅ НОВОЕ
+                item.color = res.color;       // ✅ НОВОЕ
                 item.tags = res.tags;
             }
+            
+            // Очищаем кэш для корректного отображения при следующем открытии
             wardrobeCache.clear();
-            applyFilters();
-            showCurrentModalItem();
+            
+            // Перерисовываем интерфейс
+            applyFilters(); 
+            showCurrentModalItem(); 
+            
             showToast('✅ Вещь обновлена!');
         }
     } catch (err) {
         console.error("Ошибка сохранения:", err);
-        showToast('❌ Ошибка соединения: ' + err.message);
+        showToast(' Ошибка соединения с таблицей');
     } finally {
         closeEditItemModal();
         saveBtn.disabled = false;
