@@ -1,1 +1,2492 @@
-пока временно удалила отсюда
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Мой Гардероб v69 Cached</title>
+<style>
+/* СТИЛИ ОСТАВЛЕНЫ КАК В ОРИГИНАЛЕ V69 */
+:root{--primary:#333;--accent:#4CAF50;--bg:#fff;--text:#333;--blue:#2196F3;--orange:#FF9800;--red:#c62828;--darkblue:#1a237e}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);margin:0;padding:15px;color:var(--text);padding-bottom:100px;touch-action:manipulation}
+.top-bar{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.98);backdrop-filter:blur(10px);padding:8px 12px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.05);margin-bottom:15px;display:flex;justify-content:center;align-items:center;border:1px solid #f0f0f0;gap:12px;max-width:800px;margin-left:auto;margin-right:auto}
+.search-wrap{flex:0 0 auto;width:160px;position:relative}
+.search-input{width:100%;padding:8px 30px 8px 12px;border:1px solid #eee;border-radius:12px;font-size:14px;outline:none;box-sizing:border-box;background:#fafafa}
+.clear-search{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;border:none;background:#ccc;color:#fff;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:12px}
+.top-actions{display:flex;gap:8px}
+.top-btn{padding:8px 12px;background:var(--primary);color:#fff;border:none;border-radius:12px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.top-btn.look-btn{background:#9C27B0}
+.top-btn.gallery-btn{background:var(--orange)}
+.top-btn.plan-btn{background:var(--blue)}
+.active-filters-count{background:var(--accent);color:#fff;border-radius:8px;padding:1px 5px;font-size:10px;margin-left:2px;font-weight:bold}
+.filter-sidebar{position:fixed;top:0;right:-100%;width:100%;max-width:400px;height:100vh;background:#fff;box-shadow:-5px 0 25px rgba(0,0,0,.1);z-index:2000;transition:right .3s ease;display:flex;flex-direction:column}
+.filter-sidebar.open{right:0}
+.filter-header{padding:15px 20px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;background:#fafafa}
+.filter-title{font-weight:bold;font-size:16px}
+.filter-close{background:none;border:none;font-size:24px;cursor:pointer;color:#999;width:30px;height:30px;display:flex;align-items:center;justify-content:center}
+.filter-body{flex:1;overflow-y:auto;padding:20px;padding-bottom:40px}
+.reset-all-btn{width:100%;padding:12px;margin-bottom:15px;background:#ffebee;color:var(--red);border:none;border-radius:12px;font-weight:bold;cursor:pointer;font-size:14px}
+.cache-refresh-btn{width:100%;padding:12px;margin-bottom:15px;background:#e8f5e9;color:var(--accent);border:none;border-radius:12px;font-weight:bold;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px}
+.cache-refresh-btn:hover{background:#c8e6c9}
+.preset-controls{display:flex;gap:8px;margin-bottom:20px}
+.preset-save-btn{flex:1;padding:10px;background:#e3f2fd;color:#1565c0;border:none;border-radius:12px;font-weight:bold;cursor:pointer;font-size:13px}
+.preset-load-btn{flex:1;padding:10px;background:#f5f5f5;color:#999;border:1px solid #eee;border-radius:12px;font-weight:bold;cursor:pointer;font-size:13px;display:none}
+.preset-load-btn.visible{display:block}
+.preset-load-btn.active-preset{background:var(--accent);color:#fff;border-color:var(--accent)}
+.filter-section{margin-bottom:20px}
+.filter-section-title{font-size:11px;text-transform:uppercase;color:#888;font-weight:bold;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.reset-group-btn{font-size:10px;color:#bbb;cursor:pointer;text-transform:none}
+.filter-options{display:flex;flex-wrap:wrap;gap:6px}
+.filter-option{padding:5px 10px;border:1px solid #eee;background:#fff;border-radius:14px;cursor:pointer;font-size:12px;color:#555}
+.filter-option.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.04);position:relative;cursor:pointer;border:3px solid transparent;display:flex;flex-direction:column}
+.card.selected{border-color:var(--accent);background:#f9fbe7}
+.card-img-wrap{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;background:#f5f5f5}
+.card img{width:100%;height:100%;object-fit:cover;display:block}
+.card-info{padding:8px 10px;flex:1;display:flex;flex-direction:column;justify-content:center}
+.card-name{font-weight:600;font-size:12px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-place{font-size:11px;color:#777;display:flex;align-items:center;gap:3px}
+.card-check{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0;transition:opacity .2s;z-index:2}
+/* Галочка видна ТОЛЬКО если карточка выделена (убрано :hover) */
+.card.selected .card-check{opacity:1}
+.bottom-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#fff;padding:10px 15px;border-radius:30px;box-shadow:0 4px 20px rgba(0,0,0,.12);display:flex;align-items:center;gap:10px;z-index:1000;opacity:0;pointer-events:none;transition:all .3s ease;border:1px solid #eee;max-width:800px;width:90%;justify-content:center}
+.bottom-bar.visible{opacity:1;pointer-events:auto}
+.bottom-count{font-weight:bold;color:var(--accent);font-size:14px;margin-right:6px}
+.bottom-btn{padding:10px 16px;border:none;border-radius:20px;cursor:pointer;font-size:14px;font-weight:600;white-space:nowrap}
+.btn-clear{background:#f5f5f5;color:#666}
+.btn-copy{background:var(--accent);color:#fff}
+.btn-view{background:var(--blue);color:#fff}
+.btn-wear{background:var(--orange);color:#fff;position:relative}
+.when-menu{display:none;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,.15);padding:6px;margin-bottom:8px;white-space:nowrap;z-index:10}
+.when-menu.open{display:flex;flex-direction:column;gap:4px}
+.when-menu-item{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:#333;border:none;background:none;text-align:left}
+.when-menu-item:hover{background:#f5f5f5}
+.look-sidebar{position:fixed;top:0;right:-100%;width:100%;max-width:420px;height:100vh;background:#fff;box-shadow:-5px 0 25px rgba(0,0,0,.1);z-index:2000;transition:right .3s ease;display:flex;flex-direction:column}
+.look-sidebar.open{right:0}
+.look-header{padding:15px 20px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;background:#fafafa;gap:10px}
+.look-title{font-weight:bold;font-size:16px;flex:1}
+.look-header-actions{display:flex;align-items:center;gap:6px}
+.look-move-btn{width:32px;height:32px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#666}
+.look-move-btn:not(:disabled){background:var(--blue);color:#fff;border-color:var(--blue)}
+.look-move-btn:disabled{opacity:.4;cursor:default;background:#f5f5f5}
+.look-clear-btn{width:32px;height:32px;border-radius:8px;border:1px solid #ffcdd2;background:#ffebee;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--red)}
+.look-clear-btn:hover{background:#ffcdd2}
+.look-close{background:none;border:none;font-size:24px;cursor:pointer;color:#999}
+/* === ИСПРАВЛЕННЫЙ КОНСТРУКТОР (БЕЗ НАЛОЖЕНИЯ) === */
+.look-list {
+    flex: 1;
+    overflow-y: auto !important;
+    padding: 10px !important;
+    padding-bottom: 150px !important; /* Большой отступ под кнопку "Управление" */
+    
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; 
+    gap: 8px !important; /* Минимальный отступ */
+    align-content: start !important;
+}
+
+/* === ИСПРАВЛЕННЫЙ КОНСТРУКТОР С НАЗВАНИЯМИ === */
+.look-list {
+    flex: 1;
+    overflow-y: auto !important;
+    padding: 10px !important;
+    padding-bottom: 150px !important; 
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; 
+    gap: 8px !important; 
+    align-content: start !important;
+}
+
+.look-item-card {
+    /* Используем flex-column, чтобы картинка была сверху, а текст снизу */
+    display: flex !important; 
+    flex-direction: column !important;
+    
+    background: #fafafa;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    
+    /* Вместо height: 160px используем min-height, чтобы карточка могла расти */
+    width: 100% !important;
+    min-height: 180px !important; 
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.look-item-card.selected {
+    border-color: var(--accent);
+    background: #f1f8e9;
+}
+
+/* Картинка занимает всё свободное место сверху */
+.look-thumb {
+    width: 100% !important;
+    flex: 1 !important; /* Растягивается на всю доступную высоту */
+    object-fit: cover !important;
+    display: block !important;
+    background: #eee;
+    min-height: 130px; /* Минимальная высота картинки, чтобы не сплющилась */
+}
+
+/* НОВЫЙ СТИЛЬ ДЛЯ НАЗВАНИЯ ФАЙЛА */
+.look-item-name {
+    padding: 4px 6px !important;
+    font-size: 10px !important; /* Очень мелкий шрифт */
+    font-weight: 500 !important;
+    color: #555 !important;
+    text-align: center !important;
+    
+    /* Обрезка длинных названий троеточием */
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    
+    background: #fff !important;
+    border-top: 1px solid #eee !important;
+    line-height: 1.2 !important;
+    
+    /* ВАЖНО: Разрешаем выделение текста мышкой внутри кликабельной карточки */
+    user-select: text !important; 
+    -webkit-user-select: text !important;
+    cursor: text !important; /* Курсор меняется на текстовый при наведении на имя */
+}
+
+/* Крестик удаления (поверх всего) */
+.look-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.95);
+    color: var(--red);
+    border: 1px solid #ffcdd2;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    box-shadow: 0 1px 4px rgba(0,0,0,.15);
+}
+.look-remove:hover { background: #fff; }
+/* ========================================== */
+
+.look-item-card.selected {
+    border-color: var(--accent);
+    background: #f1f8e9;
+}
+
+/* Картинка растягивается на всю карточку */
+.look-thumb {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+    border-radius: 0;
+    background: #eee;
+}
+
+/* Крестик удаления */
+.look-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.95);
+    color: var(--red);
+    border: 1px solid #ffcdd2;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    box-shadow: 0 1px 4px rgba(0,0,0,.15);
+}
+.look-remove:hover { background: #fff; }
+/* ========================================== */
+
+.look-manage-bar{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);background:#fff;padding:10px 15px;border-radius:30px;box-shadow:0 4px 20px rgba(0,0,0,.12);display:flex;align-items:center;gap:10px;z-index:1000;opacity:0;pointer-events:none;transition:all .3s ease;border:1px solid #eee;max-width:380px;width:90%;justify-content:center}
+.look-manage-bar.visible{opacity:1;pointer-events:auto}
+.look-manage-btn{padding:12px 24px;background:var(--darkblue);color:#fff;border:none;border-radius:20px;font-size:14px;font-weight:bold;cursor:pointer;box-shadow:0 4px 15px rgba(26,35,126,.3);display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+.look-manage-btn:hover{background:#0d1642}
+.manage-menu{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid #eee;border-radius:20px;box-shadow:0 -8px 30px rgba(0,0,0,.15);padding:10px;flex-direction:column;gap:6px;min-width:240px;animation: slideUp 0.2s ease}
+@keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+.manage-menu.open{display:flex}
+.menu-item{padding:14px 16px;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;color:#fff;text-align:left;display:flex;align-items:center;justify-content:space-between;position:relative;white-space:nowrap;width:100%;box-sizing:border-box;transition: transform 0.1s}
+.menu-item:active{transform:scale(0.98)}
+.menu-item.bot{background:#9C27B0}
+.menu-item.save{background:var(--accent)}
+.menu-item.clear-plans{background:var(--red)}
+.menu-item.copy{background:var(--blue)}
+.menu-item.wear-local{background:var(--orange)}
+.submenu{display:none;position:absolute;left:100%;top:0;background:#fff;border:1px solid #eee;border-radius:16px;box-shadow:4px 0 20px rgba(0,0,0,.12);padding:8px;margin-left:8px;flex-direction:column;gap:4px;min-width:200px;z-index:21}
+.submenu.open-left{display:flex;left:auto;right:100%;margin-left:0;margin-right:8px;box-shadow:-4px 0 20px rgba(0,0,0,.12)}
+.submenu.open{display:flex}
+.submenu-item{padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;color:#333;border:none;background:#f9f9f9;text-align:left;position:relative;white-space:nowrap;width:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between}
+.submenu-item:hover{background:#f0f0f0}
+.subsub{display:none;position:absolute;left:100%;top:0;background:#fff;border:1px solid #eee;border-radius:16px;box-shadow:4px 0 20px rgba(0,0,0,.12);padding:8px;margin-left:8px;flex-direction:column;gap:4px;min-width:160px;z-index:30}
+.subsub.open-left{display:flex;left:auto;right:100%;margin-left:0;margin-right:8px;box-shadow:-4px 0 20px rgba(0,0,0,.12)}
+.subsub.open{display:flex}
+.subsub-item{padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;color:#333;border:none;background:#f9f9f9;text-align:left;white-space:nowrap}
+.subsub-item:hover{background:#fff3e0;color:#ef6c00}
+.look-empty{text-align:center;color:#999;padding:40px 20px;font-size:13px;grid-column:1/-1}
+.item-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:3000;align-items:center;justify-content:center;padding:15px;backdrop-filter:blur(5px)}
+.item-modal-overlay.open{display:flex}
+.item-modal{background:#fff;border-radius:20px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;position:relative;animation:modalIn .2s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.item-modal-close{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,.9);color:#333;font-size:20px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center}
+.item-modal-img-wrap{position:relative;width:100%;aspect-ratio:3/4;background:#f5f5f5;border-radius:20px 20px 0 0;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.item-modal-img{max-width:100%;max-height:100%;object-fit:contain}
+.modal-nav{position:absolute;top:50%;transform:translateY(-50%);background:#fff;border:none;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.1);z-index:5}
+.modal-prev{left:10px}.modal-next{right:10px}
+.modal-counter{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.9);padding:4px 12px;border-radius:12px;font-size:12px;font-weight:bold}
+.item-modal-body{padding:20px;text-align:center;display:flex;flex-direction:column;gap:12px}
+.item-modal-title{font-size:16px;font-weight:700;word-break:break-all;margin:0}
+.modal-tags-toggle{padding:8px 16px;background:#f5f5f5;color:#666;border:1px solid #eee;border-radius:12px;font-size:13px;cursor:pointer;margin:0 auto}
+.modal-tags-list{display:none;flex-wrap:wrap;gap:6px;justify-content:center;padding-top:8px}
+.modal-tags-list.open{display:flex}
+.modal-tag{padding:4px 10px;background:#e8f5e9;border-radius:12px;font-size:11px;color:#2e7d32;font-weight:500}
+.modal-tag.place-tag{background:#e3f2fd;color:#1565c0}
+.modal-add-to-look-btn{width:100%;padding:12px;background:#9C27B0;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.gallery-overlay{display:none;position:fixed;inset:0;background:#fff;z-index:4000;flex-direction:column}
+.gallery-overlay.open{display:flex}
+.gallery-top-bar{display:flex;align-items:center;gap:8px;padding:8px 15px;border-bottom:1px solid #eee;position:relative;z-index:5}
+.gallery-top-bar .looks-filter-toggle{flex-shrink:0; margin-left: 24px;}
+.gallery-top-bar .gallery-look-name-inline{flex:1;font-size:15px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.gallery-to-look2-btn{padding:6px 12px;border-radius:10px;border:1px solid #e0e0e0;background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:#333;margin-right:8px;white-space:nowrap}
+.gallery-to-look2-btn:hover{background:#f5f5f5;border-color:#ccc}
+.gallery-top-bar .looks-plan-toggle{flex-shrink:0}
+.gallery-close-btn{flex-shrink:0;background:none;border:none;color:#999;font-size:24px;cursor:pointer}
+.looks-filter-toggle{width:36px;height:36px;border-radius:50%;border:1px solid #eee;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.looks-plan-toggle{padding:8px 14px;border-radius:12px;border:none;background:var(--blue);color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;box-shadow:0 2px 8px rgba(33,150,243,.2)}
+.fullscreen-look-actions-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;position:relative}
+.fullscreen-look-action-btn{padding:6px 14px;border-radius:10px;border:1px solid #eee;background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:#666;position:relative}
+.fullscreen-look-action-btn:hover{background:#f5f5f5}
+.fullscreen-look-action-btn.del{background:#ffebee;color:var(--red);border-color:#ffcdd2}
+.fullscreen-look-action-btn.wear{background:var(--orange);color:#fff;border-color:var(--orange)}
+.fullscreen-look-action-btn.wear:hover{background:#F57C00}
+.fullscreen-look-action-btn.manage{background:var(--darkblue);color:#fff;border-color:var(--darkblue)}
+.fullscreen-look-action-btn.manage:hover{background:#0d1642}
+.looks-actions-menu-inline{display:none;position:absolute;top:100%;right:0;margin-top:6px;background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,.15);padding:6px;flex-direction:column;gap:4px;min-width:220px;z-index:20}
+.looks-actions-menu-inline.open{display:flex}
+.looks-actions-item{padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:#333;border:none;background:none;text-align:left;white-space:nowrap}
+.looks-actions-item:hover{background:#f5f5f5}
+.looks-actions-item.danger{color:var(--red);}
+.looks-actions-item.danger:hover{background:#ffebee;}
+.look-wear-menu{display:none;position:absolute;top:100%;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #eee;border-radius:10px;box-shadow:0 4px 15px rgba(0,0,0,.15);padding:4px;margin-top:6px;white-space:nowrap;z-index:20}
+.look-wear-menu.open{display:flex;flex-direction:column;gap:2px}
+.look-wear-item{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;color:#333;border:none;background:none;text-align:left}
+.look-wear-item:hover{background:#f5f5f5}
+.gallery-body{flex:1;overflow:hidden;position:relative}
+.gallery-panel{display:none;height:100%;flex-direction:column}
+.gallery-panel.active{display:flex}
+.looks-filter-sidebar{position:absolute;top:0;left:-300px;width:280px;height:100%;background:#fff;box-shadow:5px 0 25px rgba(0,0,0,.1);z-index:10;transition:left .3s ease;display:flex;flex-direction:column;padding:15px;overflow-y:auto}
+.looks-filter-sidebar.open{left:0}
+.looks-filter-header{display:flex;justify-content:flex-start;align-items:center;margin-bottom:15px;gap:10px}
+.looks-filter-close{background:none;border:none;font-size:20px;cursor:pointer;color:#999;order:-1}
+.looks-filter-title{font-weight:bold;font-size:15px}
+.looks-filter-reset{width:100%;padding:10px;margin-bottom:12px;background:#ffebee;color:var(--red);border:none;border-radius:10px;font-weight:bold;cursor:pointer;font-size:13px}
+.looks-preset-controls{display:flex;gap:8px;margin-bottom:15px}
+.looks-preset-save-btn{flex:1;padding:10px;background:#e3f2fd;color:#1565c0;border:none;border-radius:12px;font-weight:bold;cursor:pointer;font-size:13px}
+.looks-preset-load-btn{flex:1;padding:10px;background:#f5f5f5;color:#999;border:1px solid #eee;border-radius:12px;font-weight:bold;cursor:pointer;font-size:13px;display:none}
+.looks-preset-load-btn.visible{display:block}
+.looks-preset-load-btn.active-preset{background:var(--accent);color:#fff;border-color:var(--accent)}
+.looks-filter-section{margin-bottom:16px}
+.looks-filter-label{font-size:11px;text-transform:uppercase;color:#888;font-weight:bold;margin-bottom:8px}
+.looks-filter-options{display:flex;flex-wrap:wrap;gap:6px}
+.lf-option{padding:5px 10px;border:1px solid #eee;background:#fff;border-radius:14px;cursor:pointer;font-size:11px;color:#555}
+.lf-option.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+/* === ИСПРАВЛЕНИЕ ДЛЯ ОКНА ОБРАЗЫ (АДАПТИВНОЕ) === */
+.fullscreen-look {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px !important;
+    overflow-y: auto !important;
+    height: 75vh !important; /* Фиксируем высоту области прокрутки */
+}
+
+.fullscreen-look-grid {
+    display: grid !important;
+    /* Адаптивная сетка: минимум 140px, максимум - сколько влезет */
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; 
+    gap: 12px !important;
+    padding: 0 !important;
+    
+    /* ГЛАВНОЕ ИСПРАВЛЕНИЕ: ограничиваем ширину */
+    width: 100% !important;
+    max-width: 800px !important; /* Чтобы на ПК не было гигантских карточек */
+    margin: 0 auto !important;   /* Центрируем */
+    
+    /* Убираем старые ограничения высоты внутри сетки */
+    max-height: none !important; 
+    overflow-y: visible !important; /* Прокручивает родитель .fullscreen-look */
+}
+
+/* Карточка образа (миниатюра) */
+.fullscreen-look-item {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    position: relative !important;
+    cursor: pointer !important;
+    background: #f5f5f5 !important;
+    border: 2px solid #fff !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    
+    /* ЖЕСТКАЯ ФИКСАЦИЯ ПРОПОРЦИЙ */
+    width: 100% !important;
+    aspect-ratio: 3/4 !important; /* Пропорции как у вещей */
+    margin: 0 !important;
+}
+
+.fullscreen-look-item img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+    border-radius: 0 !important;
+}
+
+/* Убираем старые стили для одиночного элемента, чтобы не мешали */
+.fullscreen-look-grid.single-item {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+    max-width: 300px !important; /* Ограничиваем ширину даже для 1 вещи */
+}
+/* ========================================== */
+.fullscreen-nav{display:flex;align-items:center;gap:15px;padding:8px;justify-content:center}
+.fullscreen-nav-btn{width:44px;height:44px;border-radius:50%;border:none;background:var(--blue);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(33,150,243,.3)}
+.fullscreen-nav-btn:hover{background:#1976D2}
+.fullscreen-counter{font-size:13px;font-weight:600;color:#666;min-width:50px;text-align:center}
+.fullscreen-empty{text-align:center;color:#999;padding:40px;font-size:14px}
+.plan-overlay{display:none;position:fixed;inset:0;background:#fff;z-index:4500;flex-direction:column}
+.plan-overlay.open{display:flex}
+.plan-header{padding:8px 15px;display:flex;justify-content:center;align-items:center;border-bottom:1px solid #eee;position:relative}
+.plan-header-center{display:flex;align-items:center;gap:10px}
+.plan-title{font-size:18px;font-weight:bold}
+.plan-header-btn{padding:6px 14px;border:none;border-radius:10px;font-size:12px;font-weight:bold;cursor:pointer}
+.plan-clear-all-btn{background:var(--red);color:#fff}
+.plan-clear-all-btn:hover{background:#b71c1c}
+.plan-gallery-btn{background:var(--orange);color:#fff}
+.plan-gallery-btn:hover{background:#F57C00}
+.plan-close{position:absolute;right:15px;background:none;border:none;color:#999;font-size:28px;cursor:pointer}
+.plan-subtabs{display:flex;border-bottom:1px solid #eee;background:#fafafa}
+.plan-subtab{flex:1;padding:12px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;color:#999;border-bottom:3px solid transparent}
+.plan-subtab.active{color:var(--blue);border-bottom-color:var(--blue);background:#fff}
+.plan-body{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.plan-fullscreen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px}
+/* === ИСПРАВЛЕНИЕ ДЛЯ ОКНА ПЛАНА (БЕЗ НАЛОЖЕНИЯ) === */
+/* === ИСПРАВЛЕНИЕ ДЛЯ ОКНА ПЛАНА (АДАПТИВНОЕ) === */
+.plan-grid {
+    display: grid !important;
+    /* На ПК будет 4 колонки, на планшете 3, на телефоне 2 */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; 
+    gap: 12px !important;
+    padding: 10px !important;
+    max-height: 70vh !important; /* Чуть увеличил высоту для ПК */
+    overflow-y: auto !important;
+    align-content: start !important;
+    
+    /* ГЛАВНОЕ ИСПРАВЛЕНИЕ: ограничиваем ширину сетки */
+    width: 100% !important;
+    max-width: 800px !important; /* Чтобы на ПК не было гигантских карточек */
+    margin: 0 auto !important;   /* Центрируем сетку */
+    box-sizing: border-box;
+}
+
+.plan-item {
+    display: block !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    position: relative !important;
+    cursor: pointer !important;
+    
+    /* ЖЕСТКАЯ ФИКСАЦИЯ РАЗМЕРОВ */
+    width: 100% !important;
+    height: 200px !important; /* На ПК можно чуть выше (было 160px) */
+    margin: 0 !important;
+    background: #f5f5f5 !important;
+    border: 2px solid #fff !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+}
+
+.plan-item img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+    border-radius: 0 !important;
+}
+
+.plan-item-remove {
+    position: absolute !important;
+    top: 6px !important;
+    right: 6px !important;
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 50% !important;
+    background: rgba(255,255,255,.95) !important;
+    color: var(--red) !important;
+    border: 1px solid #ffcdd2 !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 10 !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,.15) !important;
+}
+.plan-item-remove:hover { background: #fff !important; }
+/* ========================================== */
+.plan-bottom-bar{display:flex;align-items:center;gap:10px;padding:10px 15px;justify-content:center;border-top:1px solid #eee;background:#fafafa}
+.plan-nav-btn{width:44px;height:44px;border-radius:50%;border:none;background:var(--blue);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(33,150,243,.3);flex-shrink:0}
+.plan-nav-btn:hover{background:#1976D2}
+.plan-counter{font-size:13px;font-weight:600;color:#666;min-width:50px;text-align:center}
+.plan-manage-wrap{position:relative}
+.plan-manage-btn{padding:10px 16px;background:var(--darkblue);color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:bold;cursor:pointer;white-space:nowrap; margin-left: 16px;}
+.plan-manage-btn:hover{background:#0d1642}
+.plan-manage-menu{display:none;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 -4px 15px rgba(0,0,0,.15);padding:6px;margin-bottom:8px;flex-direction:column;gap:4px;min-width:200px;white-space:nowrap}
+.plan-manage-menu.open{display:flex}
+.plan-manage-item{padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:#333;border:none;background:none;text-align:left}
+.plan-manage-item:hover{background:#f5f5f5}
+.plan-manage-item.danger{color:var(--red)}
+.plan-manage-item.danger:hover{background:#ffebee}
+.save-dialog-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:5000;align-items:center;justify-content:center;padding:20px}
+.save-dialog-overlay.open{display:flex}
+.save-dialog{
+    background:#fff;
+    border-radius:20px;
+    padding:24px;
+    max-width:360px;
+    width:100%;
+    animation:modalIn .2s ease;
+    
+    /* === НОВЫЕ СВОЙСТВА ДЛЯ ПРОКРУТКИ === */
+    max-height: 90vh;       /* Ограничиваем высоту 90% от экрана */
+    overflow-y: auto;       /* Включаем вертикальную прокрутку */
+    box-sizing: border-box; /* Чтобы padding не ломал размеры */
+}
+.save-dialog h3{margin:0 0 16px;font-size:18px}
+.save-dialog label{display:block;font-size:13px;font-weight:600;color:#666;margin-bottom:6px;margin-top:12px}
+.save-dialog select{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;font-size:14px;outline:none;background:#fafafa;box-sizing:border-box}
+.save-dialog-checkbox{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;cursor:pointer}
+.save-dialog-checkbox input{width:18px;height:18px;accent-color:var(--accent)}
+.save-dialog-actions{display:flex;gap:10px;margin-top:20px}
+.save-dialog-btn{flex:1;padding:12px;border:none;border-radius:12px;font-size:14px;font-weight:bold;cursor:pointer}
+.save-dialog-confirm{background:var(--accent);color:#fff}
+.save-dialog-cancel{background:#f5f5f5;color:#666}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;z-index:6000;opacity:0;transition:opacity .3s;pointer-events:none}/* === НОВЫЕ СТИЛИ ДЛЯ РЕДАКТИРОВАНИЯ ТЕГОВ === */
+.edit-tags-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:5500;align-items:center;justify-content:center;padding:20px}
+.edit-tags-overlay.open{display:flex}
+.edit-tags-modal{background:#fff;border-radius:20px;max-width:450px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;animation:modalIn .2s ease}
+.edit-tags-section{margin-bottom:20px}
+.edit-tags-title{font-size:12px;text-transform:uppercase;color:#888;font-weight:bold;margin-bottom:10px}
+.edit-tags-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.edit-tag-checkbox{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #eee;border-radius:10px;cursor:pointer;font-size:13px;transition:all .2s;user-select:none}
+.edit-tag-checkbox:hover{background:#f9f9f9}
+.edit-tag-checkbox.checked{background:#e8f5e9;border-color:#c8e6c9;color:#2e7d32;font-weight:600}
+.edit-tag-checkbox input{display:none}
+.edit-tag-checkbox .check-icon{width:18px;height:18px;border-radius:4px;border:2px solid #ccc;display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent}
+.edit-tag-checkbox.checked .check-icon{background:#4CAF50;border-color:#4CAF50;color:white}
+.edit-tags-actions{display:flex;gap:10px;margin-top:24px}
+.edit-tags-save{flex:1;padding:12px;background:var(--accent);color:white;border:none;border-radius:12px;font-weight:bold;cursor:pointer}
+.edit-tags-cancel{flex:1;padding:12px;background:#f5f5f5;color:#666;border:none;border-radius:12px;font-weight:bold;cursor:pointer}
+@media(max-width:600px){.edit-tags-grid{grid-template-columns:1fr}}/* === СТИЛИ ДЛЯ РЕДАКТОРА ВЕЩЕЙ === */
+.edit-item-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:5600;align-items:center;justify-content:center;padding:20px}
+.edit-item-overlay.open{display:flex}
+.edit-item-modal{background:#fff;border-radius:20px;max-width:450px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;animation:modalIn .2s ease}
+.edit-item-section{margin-bottom:20px}
+.edit-item-title{font-size:12px;text-transform:uppercase;color:#888;font-weight:bold;margin-bottom:10px}
+.edit-item-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.edit-item-radio{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #eee;border-radius:10px;cursor:pointer;font-size:13px;transition:all .2s;user-select:none}
+.edit-item-radio:hover{background:#f9f9f9}
+.edit-item-radio.selected{background:#e3f2fd;border-color:#bbdefb;color:#1565c0;font-weight:600}
+.edit-item-radio input{display:none}
+.edit-item-radio .radio-icon{width:18px;height:18px;border-radius:50%;border:2px solid #ccc;display:flex;align-items:center;justify-content:center}
+.edit-item-radio.selected .radio-icon{border-color:#2196F3}
+.edit-item-radio.selected .radio-icon::after{content:'';width:10px;height:10px;border-radius:50%;background:#2196F3}
+.edit-item-actions{display:flex;gap:10px;margin-top:24px}
+.edit-item-save{flex:1;padding:12px;background:var(--accent);color:white;border:none;border-radius:12px;font-weight:bold;cursor:pointer;opacity:1;transition:opacity .2s}
+.edit-item-save:disabled{opacity:.4;cursor:not-allowed;background:#ccc}
+.edit-item-cancel{flex:1;padding:12px;background:#f5f5f5;color:#666;border:none;border-radius:12px;font-weight:bold;cursor:pointer}
+@media(max-width:600px){.edit-item-grid{grid-template-columns:1fr}}
+/* === СТИЛИ ДЛЯ КОММЕНТАРИЯ ВЕЩИ === */
+.edit-comment-section { margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
+.edit-comment-input { 
+    width: 100%; min-height: 70px; padding: 10px; border: 1px solid #ddd; 
+    border-radius: 10px; font-size: 13px; resize: vertical; box-sizing: border-box; 
+    font-family: inherit; outline: none; transition: border-color 0.2s;
+}
+.edit-comment-input:focus { border-color: var(--accent); }
+.modal-note-block {
+    width: 100%; background: #fff8e1; padding: 12px; border-radius: 10px; 
+    margin-top: 12px; font-size: 13px; color: #5d4037; text-align: left; 
+    border-left: 4px solid #ffb300; line-height: 1.4; word-break: break-word;
+}
+.note-search-wrap { margin-bottom: 20px; }
+.note-search-input { 
+    width: 100%; padding: 8px 12px; border: 1px solid #eee; border-radius: 10px; 
+    font-size: 13px; box-sizing: border-box; background: #fafafa;
+}
+/* ========================================== */
+.toast.show{opacity:1}
+@media(max-width:768px){
+.search-wrap{width:30%;min-width:100px}
+.top-btn{padding:8px 8px;font-size:12px}
+.grid{grid-template-columns:repeat(2,1fr);gap:10px}
+.top-bar{padding:6px 10px;border-radius:12px;margin-bottom:10px;gap:6px}
+.filter-sidebar,.look-sidebar{width:100%;max-width:100%}
+.bottom-bar{width:92%;padding:8px 12px;gap:8px;border-radius:24px}
+.bottom-btn{padding:8px 12px;font-size:13px}
+.look-manage-bar {
+    bottom: 10px; /* Опустили кнопку максимально низко */
+    width: 92%;
+    max-width: 360px;
+    padding: 8px 12px;
+    
+}
+.look-manage-btn{padding:10px 20px;font-size:13px}
+
+
+.looks-filter-sidebar{width:260px}
+
+.plan-close{right:10px}
+.plan-header-btn{padding:5px 10px;font-size:11px}
+.plan-title{font-size:16px}
+.plan-nav-btn{width:38px;height:38px;font-size:18px}
+.gallery-top-bar{padding:6px 10px;gap:6px}
+.gallery-top-bar .gallery-look-name-inline{font-size:13px}
+.fullscreen-look{padding:6px 10px 0}
+.fullscreen-nav {
+    padding: 0; /* Убрали лишние отступы вокруг кнопок навигации */
+    margin-top: 5px; /* Минимальный зазор от картинок, чтобы не слипались */
+}
+.fullscreen-nav-btn{width:38px;height:38px;font-size:18px}
+.submenu, .subsub{position:static!important;left:auto!important;right:auto!important;top:auto!important;margin-left:0!important;margin-right:0!important;margin-top:4px!important;box-shadow:none!important;border:none!important;padding:0 0 0 16px!important;background:transparent!important}
+}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<div class="search-wrap"><input type="text" class="search-input" id="searchInput" placeholder="Поиск..."><button class="clear-search" id="clearSearch" onclick="clearSearchField()">✕</button></div>
+<div class="top-actions">
+<button class="top-btn plan-btn" onclick="openPlanWindow()">📋 План</button>
+<button class="top-btn gallery-btn" onclick="openGallery()">🖼️ Образы</button>
+<button class="top-btn look-btn" onclick="openLookBuilderOnly()">👗 Лук</button>
+<button class="top-btn" onclick="toggleFilterSidebar()">⚙️ <span class="active-filters-count" id="filterCount" style="display:none">0</span></button>
+</div>
+</div>
+<div class="filter-sidebar" id="filterSidebar">
+<div class="filter-header"><div class="filter-title">Фильтры вещей</div><button class="filter-close" onclick="toggleFilterSidebar()">✕</button></div>
+<div class="filter-body" id="filterBody">
+    <button class="reset-all-btn" onclick="resetAllFilters()">🔄 Сбросить все фильтры</button>
+    <button class="cache-refresh-btn" onclick="forceCacheRefresh()">🔄 Обновить данные</button>
+    <div class="preset-controls"><button class="preset-save-btn" onclick="savePreset()">💾 Сохранить настройки</button><button class="preset-load-btn" id="loadPresetBtn" onclick="loadPreset()">⚡ Применить</button></div>
+</div>
+</div>
+<div class="grid" id="gallery"></div>
+<div class="bottom-bar" id="bottomBar">
+<span class="bottom-count"><span id="selectedCount">0</span></span>
+<button class="bottom-btn btn-clear" onclick="clearSelection()">Снять</button>
+<button class="bottom-btn btn-copy" onclick="copySelected()">📋 Коп.</button>
+<button class="bottom-btn btn-view" onclick="openItemModalFromSelection()">🔍 Откр.</button>
+<!-- НОВАЯ КНОПКА: Молча добавляет выделенное в конструктор -->
+<button class="bottom-btn btn-wear" style="background:#9C27B0;" onclick="addToLookSilent()">👗 В лук</button>
+</div>
+<div class="look-sidebar" id="lookSidebar">
+<div class="look-header">
+<div class="look-title">👗 Конструктор</div>
+<div class="look-header-actions">
+<button class="look-move-btn" id="moveUpBtn" onclick="event.stopPropagation();moveSelectedItemUp()" disabled>⬆️</button>
+<button class="look-move-btn" id="moveDownBtn" onclick="event.stopPropagation();moveSelectedItemDown()" disabled>⬇️</button>
+<button class="look-clear-btn" onclick="clearConstructor()" title="Очистить конструктор">🗑️</button>
+<button class="look-close" onclick="closeLookBuilder()">✕</button>
+</div>
+</div>
+<div class="look-list" id="lookList"><div class="look-empty">Пусто. Выберите вещи в галерее</div></div>
+<div class="look-manage-bar" id="lookManageBar">
+<button class="look-manage-btn" onclick="toggleManageMenu()">️ Управление</button>
+<div class="manage-menu" id="manageMenu">
+<button class="menu-item bot" onclick="toggleSubmenu('botSub', this)">📋 Боту <span>▸</span></button>
+<div class="submenu" id="botSub">
+
+<button class="submenu-item" onclick="copyBotBatchTag()">⭐ В избранное</button>
+<button class="submenu-item" onclick="copyBotBatchTagRemove()">️ Убрать из избранного</button>
+<button class="submenu-item" onclick="sendStatusCommand('ST_OK')">✅ В Доступно</button>
+<button class="submenu-item" onclick="sendStatusCommand('ST_TRASH')">🗑️ В Выкинуть</button>
+</div>
+<button class="menu-item wear-local" onclick="toggleSubmenu('wearSub', this)">📅 Надеть <span>▸</span></button>
+<div class="submenu" id="wearSub">
+<button class="submenu-item" onclick="localPlanFromConstructor('tomorrow')">Завтра</button>
+<button class="submenu-item" onclick="localPlanFromConstructor('dayafter')">Послезавтра</button>
+<button class="submenu-item" onclick="localPlanFromConstructor('day3')">На 3 день</button>
+</div>
+<button class="menu-item save" onclick="openSaveDialog();closeManageMenu()">💾 Сохр. образ на время</button>
+<button class="menu-item clear-plans" onclick="clearAllPlans()">️ Очистить планы</button>
+<button class="menu-item copy" onclick="copyConstructorNames()">📋 Состав</button>
+</div>
+</div>
+</div>
+<div class="item-modal-overlay" id="itemModalOverlay">
+<div class="item-modal">
+    <button class="item-modal-close" onclick="closeItemModal()">✕</button>
+    <div class="item-modal-img-wrap">
+        <button class="modal-nav modal-prev" onclick="navigateModal(-1)">‹</button>
+        <img class="item-modal-img" id="itemModalImg" src="" alt="">
+        <button class="modal-nav modal-next" onclick="navigateModal(1)">›</button>
+        <div class="modal-counter" id="modalCounter"></div>
+    </div>
+    <div class="item-modal-body">
+        <div class="item-modal-title" id="itemModalTitle"></div>
+        <button class="modal-tags-toggle" onclick="toggleModalTags()">🏷️ Показать теги</button><button class="modal-tags-toggle" style="margin-top:8px;" onclick="openEditItemModal()">✏️ Редак-ть вещь</button>
+        <div class="modal-tags-list" id="modalTagsList"></div>
+        <button class="modal-add-to-look-btn" onclick="addCurrentToLook()">👗 Добавить в лук</button>
+    </div>
+</div>
+</div>
+<div class="gallery-overlay" id="galleryOverlay">
+<div class="gallery-top-bar">
+<button class="looks-filter-toggle" onclick="toggleLooksFilters()">🎯 <span class="active-filters-count" id="looksFilterCount" style="display:none">0</span></button>
+<div class="gallery-look-name-inline" id="galleryLookNameInline"></div>
+<button class="gallery-close-btn" onclick="closeGallery()">✕</button>
+</div>
+<div class="gallery-body">
+<div class="gallery-panel active" id="panel-looks">
+<div class="looks-filter-sidebar" id="looksFilterSidebar">
+<div class="looks-filter-header"><button class="looks-filter-close" onclick="toggleLooksFilters()">✕</button><div class="looks-filter-title">Фильтры образов</div></div>
+<button class="looks-filter-reset" onclick="resetLooksFilters()">🔄 Сбросить фильтры</button>
+<!-- НОВОЕ ПОЛЕ ПОИСКА ВЕЩИ В ОБРАЗАХ -->
+<div style="margin-bottom:15px;">
+    <input type="text" id="lookItemSearchInput" placeholder="🔍 Найти вещь в образе..." 
+           style="width:100%;padding:8px 12px;border:1px solid #eee;border-radius:10px;font-size:13px;box-sizing:border-box;background:#fafafa;">
+</div>
+<!-- ========================================== -->
+<div class="looks-preset-controls">
+    <button class="looks-preset-save-btn" onclick="saveLooksPreset()">💾 Сохранить</button>
+    <button class="looks-preset-load-btn" id="loadLooksPresetBtn" onclick="loadLooksPreset()">⚡ Применить</button>
+</div>
+<div class="looks-filter-section"><div class="looks-filter-label">Метки</div><div class="looks-filter-options" id="lfMarks"></div></div>
+<div class="looks-filter-section"><div class="looks-filter-label">Лайки</div><div class="looks-filter-options" id="lfLikes"></div></div>
+<div class="looks-filter-section"><div class="looks-filter-label">Назначение</div><div class="looks-filter-options" id="lfOccasions"></div></div>
+<div class="looks-filter-section"><div class="looks-filter-label">Сезон</div><div class="looks-filter-options" id="lfSeasons"></div></div>
+</div>
+<div class="fullscreen-look" id="looksFullscreen"></div>
+<div class="fullscreen-nav" id="looksNav"></div>
+</div>
+</div>
+</div>
+<div class="plan-overlay" id="planOverlay">
+<div class="plan-header">
+<div class="plan-header-center">
+<div class="plan-title"> План</div>
+<button class="plan-header-btn plan-clear-all-btn" onclick="clearAllPlans()">🗑️ Очистить планы</button>
+</div>
+<button class="plan-close" onclick="closePlanWindow()">✕</button>
+</div>
+<div class="plan-subtabs">
+<div class="plan-subtab active" onclick="switchPlanSubtab('tomorrow')">Завтра</div>
+<div class="plan-subtab" onclick="switchPlanSubtab('dayafter')">Послезавтра</div>
+<div class="plan-subtab" onclick="switchPlanSubtab('day3')">На 3 день</div>
+</div>
+<div class="plan-body">
+<div class="plan-fullscreen" id="planFullscreen"></div>
+</div>
+<div class="plan-bottom-bar">
+<button class="plan-nav-btn" onclick="navPlan(-1)">‹</button>
+<div class="plan-counter" id="planCounter"></div>
+<button class="plan-nav-btn" onclick="navPlan(1)">›</button>
+<div class="plan-manage-wrap">
+<button class="plan-manage-btn" onclick="togglePlanManage()">⚙️ Управление</button>
+<div class="plan-manage-menu" id="planManageMenu">
+<button class="plan-manage-item danger" onclick="clearPlanDay()"> Очистить день</button>
+<button class="plan-manage-item" onclick="copyPlanDayNames()">📋 Состав</button>
+</div>
+</div>
+</div>
+</div>
+<div class="save-dialog-overlay" id="saveDialogOverlay">
+<div class="save-dialog">
+<h3>💾 Сохр. образ на время</h3>
+<label>Название</label><select id="saveDialogName"></select>
+<label>Уникальный ID (Hash)</label><input type="text" id="saveDialogHash" readonly style="width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;font-size:12px;background:#f5f5f5;color:#666;margin-bottom:12px;box-sizing:border-box;">
+<label>Назначение</label><select id="saveDialogOccasion"><option value="">— Не указано —</option></select>
+<label>Сезон</label><select id="saveDialogSeason"><option value="">— Не указан —</option></select>
+<label class="save-dialog-checkbox"><input type="checkbox" id="saveDialogFav"> ⭐ Избранное</label>
+<label class="save-dialog-checkbox"><input type="checkbox" id="saveDialogOften"> 🔥 Часто ношу</label>
+<label class="save-dialog-checkbox"><input type="checkbox" id="saveDialogPlanTomorrow">  Завтра</label>
+<label class="save-dialog-checkbox"><input type="checkbox" id="saveDialogPlanDayAfter"> 📅 Послезавтра</label>
+<label class="save-dialog-checkbox"><input type="checkbox" id="saveDialogPlanDay3"> 📅 На 3 день</label>
+<div class="save-dialog-actions">
+    <button class="save-dialog-btn save-dialog-cancel" onclick="closeSaveDialog()">Отмена</button>
+    <button class="save-dialog-btn save-dialog-confirm" onclick="confirmSaveLook()">Сохр. на время</button>
+</div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<!-- Всплывающее окно с ID образа -->
+<div class="edit-tags-overlay" id="copyIdOverlay">
+    <div class="edit-tags-modal" style="max-width: 300px; text-align: center;">
+        <h3 style="margin: 0 0 15px; font-size: 18px;">📋 ID Образа</h3>
+        <p id="copyIdText" style="color: #666; margin-bottom: 24px; font-size: 14px; word-break: break-all;"></p>
+        <div class="edit-tags-actions">
+            <button class="edit-tags-save" style="background: var(--blue); color: white;" onclick="closeCopyIdOverlay()">ОК</button>
+        </div>
+    </div>
+</div>
+<!-- УНИВЕРСАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ДЕЙСТВИЙ -->
+<div class="edit-tags-overlay" id="universalConfirmOverlay">
+    <div class="edit-tags-modal" style="max-width: 320px; text-align: center;">
+        <h3 id="universalConfirmTitle" style="margin: 0 0 15px; font-size: 18px;">Подтверждение</h3>
+        <p id="universalConfirmText" style="color: #666; margin-bottom: 24px; font-size: 14px; line-height: 1.4;"></p>
+        <input type="hidden" id="universalConfirmAction">
+        <input type="hidden" id="universalConfirmIdx">
+        <div class="edit-tags-actions">
+            <button class="edit-tags-cancel" onclick="closeUniversalConfirm()">Отмена</button>
+            <button id="universalConfirmBtn" class="edit-tags-save" style="background: var(--red); color: white;" onclick="executeUniversalAction()">Подтвердить</button>
+        </div>
+    </div>
+</div>
+<!-- Окно подтверждения дубликата образа -->
+<div class="edit-tags-overlay" id="duplicateLookOverlay">
+    <div class="edit-tags-modal" style="max-width: 350px; text-align: center;">
+        <h3 style="margin: 0 0 15px; font-size: 18px;">⚠️ Такой образ уже есть!</h3>
+        <p id="duplicateLookText" style="color: #666; margin-bottom: 24px; font-size: 14px; line-height: 1.4;"></p>
+        <div class="edit-tags-actions">
+            <button class="edit-tags-cancel" onclick="closeDuplicateLookOverlay()">Отмена</button>
+            <button class="edit-tags-save" style="background: var(--accent); color: white;" onclick="confirmDuplicateLook()">Сохранить дубликат</button>
+        </div>
+    </div>
+</div>
+<!-- Модальное окно редактирования тегов образа -->
+<div class="edit-tags-overlay" id="editTagsOverlay">
+    <div class="edit-tags-modal">
+        <h3 style="margin:0 0 20px;font-size:18px;">Редактирование тегов</h3>
+        <div id="editTagsContent"></div>
+        <div class="edit-tags-actions">
+            <button class="edit-tags-cancel" onclick="closeEditTagsModal()">Отмена</button>
+            <button class="edit-tags-save" onclick="saveEditedTags()">Сохранить</button>
+        </div>
+    </div>
+
+</div><!-- Модальное окно редактирования вещи -->
+<div class="edit-item-overlay" id="editItemOverlay">
+    <div class="edit-item-modal">
+        <h3 style="margin:0 0 20px;font-size:18px;">Редактирование вещи</h3>
+        <div id="editItemContent"></div>
+        <div class="edit-item-actions">
+            <button class="edit-item-cancel" onclick="closeEditItemModal()">Отмена</button>
+            <button class="edit-item-save" id="editItemSaveBtn" onclick="saveEditedItem()" disabled>Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// === МОДУЛЬ КЭШИРОВАНИЯ И ЗАГРУЗКИ ДАННЫХ ===
+const CACHE_CONFIG = { KEY_DATA: 'wardrobe_v69_meta_cache', KEY_VERSION: 'wardrobe_v69_cache_ver', KEY_SYNC_TIME: 'wardrobe_v69_sync_ts', VERSION: 'v69-gas-v1', MAX_AGE_HOURS: 24 };
+    
+
+// ️ ДОБАВЬ ЭТУ СТРОКУ ⬇️
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbySXvxKvKqbs7o9qr_6oPG4QL90TdD4EVGs6oGK_-IVsi4W4mkeG2kDy8L0dJKiyPxzHQ/exec';
+class WardrobeCache {
+    constructor() { this.data = null; this.isReady = false; }
+    hasValidCache() { try { const v = localStorage.getItem(CACHE_CONFIG.KEY_VERSION); const t = localStorage.getItem(CACHE_CONFIG.KEY_SYNC_TIME); if (!v || v !== CACHE_CONFIG.VERSION || !t) return false; return (Date.now() - new Date(t).getTime()) < CACHE_CONFIG.MAX_AGE_HOURS * 3600000; } catch { return false; } }
+    loadFromCache() { try { const raw = localStorage.getItem(CACHE_CONFIG.KEY_DATA); if (!raw) return null; this.data = JSON.parse(raw); this.isReady = true; return this.data; } catch { this.clear(); return null; } }
+    saveToCache(items) { try { localStorage.setItem(CACHE_CONFIG.KEY_DATA, JSON.stringify(items)); localStorage.setItem(CACHE_CONFIG.KEY_VERSION, CACHE_CONFIG.VERSION); localStorage.setItem(CACHE_CONFIG.KEY_SYNC_TIME, new Date().toISOString()); this.data = items; this.isReady = true; } catch (e) { if (e.name === 'QuotaExceededError') this.clear(); } }
+    clear() { localStorage.removeItem(CACHE_CONFIG.KEY_DATA); localStorage.removeItem(CACHE_CONFIG.KEY_VERSION); localStorage.removeItem(CACHE_CONFIG.KEY_SYNC_TIME); this.data = null; this.isReady = false; }
+    getSyncTime() { return localStorage.getItem(CACHE_CONFIG.KEY_SYNC_TIME); }
+}
+const wardrobeCache = new WardrobeCache();
+
+// Глобальные переменные (будут заполнены данными из GAS)
+let data=[], tagNames={}, typeNames={}, catNames={}, placeNames={}, colorNames={}, statusNames={};
+let seasonsItemList=[], occasionsItemList=[], occasionsLookList=[], seasonsLookList=[], likesList=[];
+let dbSavedLooks=[];
+let selectedNames=new Set(),lookItems=[],savedLooks=[],plans={tomorrow:[],dayafter:[],day3:[]},filteredItemsCache=[],currentModalIndex=0,selectedLookIndex=-1,currentPlanDay='tomorrow',looksSlideIndex=0,planSlideIndex=0;
+let lfFav=false, lfOften=false, lfNoTags=false, lfLocalOnly=false;
+let lfOccasions=new Set(), lfSeasons=new Set(), lfLikes=new Set();
+try{ const s=localStorage.getItem('current_look');if(s)lookItems=JSON.parse(s); const sl=localStorage.getItem('saved_looks');if(sl)savedLooks=JSON.parse(sl); const sp=localStorage.getItem('wardrobe_plans');if(sp)plans=JSON.parse(sp); }catch(e){}
+let activeFilters={category:new Set(),type:new Set(),season:new Set(),color:new Set(),status:new Set(),place:new Set(),occasion:new Set(),like:new Set(),often:false,fav:false,notWear:false,search:'',noteSearch:''};
+
+// === ФУНКЦИЯ ЗАГРУЗКИ ДАННЫХ ИЗ GAS ===
+// ️ ЗАМЕНИ ЭТУ ФУНКЦИЮ В БОЛЬШОМ HTML ПЕРЕД ЗАГРУЗКОЙ НА GITHUB
+
+
+// === НАСТРОЙКИ ДЛЯ ГИБРИДНОЙ РАБОТЫ ===
+
+
+// === ФУНКЦИЯ ЗАГРУЗКИ ДАННЫХ (Универсальная) ===
+async function fetchAllItems() {
+    showToast('⏳ Загрузка полной базы...');
+    
+    try {
+        let response;
+        
+        // ОПРЕДЕЛЯЕМ, ГДЕ МЫ ЗАПУЩЕНЫ
+        if (typeof google !== 'undefined' && google.script) {
+            // === ВАРИАНТ А: Мы внутри Google Apps Script ===
+            response = await new Promise((resolve, reject) => {
+                google.script.run
+                    .withSuccessHandler(resolve)
+                    .withFailureHandler(reject)
+                    .getWardrobeData();
+            });
+        } else {
+            // === ВАРИАНТ Б: Мы на GitHub Pages (или любом другом хостинге) ===
+            const res = await fetch(GAS_WEB_APP_URL + '?action=getWardrobeData');
+            if (!res.ok) throw new Error(`Ошибка сети: ${res.status}`);
+            response = await res.json();
+        }
+
+        // ОБРАБОТКА ОТВЕТА (одинаковая для обоих вариантов)
+        if (response.error) {
+            showToast(' ' + response.error);
+            return [];
+        }
+
+        // Заполняем глобальные справочники
+        tagNames = response.tagNames || {}; typeNames = response.typeNames || {};
+        catNames = response.catNames || {}; placeNames = response.placeNames || {};
+        colorNames = response.colorNames || {}; statusNames = response.statusNames || {};
+        seasonsItemList = response.seasonsItemList || []; occasionsItemList = response.occasionsItemList || [];
+        occasionsLookList = response.occasionsLookList || []; seasonsLookList = response.seasonsLookList || [];
+        likesList = response.likesList || [];
+
+        const adaptedItems = response.items || [];
+
+        // Объединяем локальные и DB образы
+        if (response.savedLooks && response.savedLooks.length > 0) {
+            const localIds = new Set(savedLooks.map(l=>l.uniqueId));
+            response.savedLooks.forEach(dl => { if(!localIds.has(dl.uniqueId)) savedLooks.push(dl); });
+        }
+
+        return adaptedItems;
+
+    } catch (e) {
+        console.error(e);
+        showToast('❌ Ошибка загрузки данных: ' + e.message);
+        return [];
+    }
+}
+
+async function initAppWithCache() {
+    try {
+        const newData = await fetchAllItems();
+        data = newData;
+        wardrobeCache.saveToCache(newData); 
+        render(newData); 
+        filteredItemsCache = newData; 
+        showToast('✅ Полная загрузка завершена');
+        
+        // Перестраиваем фильтры после загрузки данных
+        console.log(" Перестройка фильтров вещей после загрузки данных");
+        initFilters();
+        
+    } catch (e) { 
+        showToast('❌ Ошибка загрузки данных'); 
+    }
+}
+
+// === ФИЛЬТРЫ И РЕНДЕРИНГ ===
+// === ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ АКТУАЛЬНЫХ ГРУПП ФИЛЬТРОВ ===
+function getFilterGroups() {
+    return [
+        {label:'Метки', key:'often_fav', isSpecial:true, extraIds:['NOT_WEAR']},
+        {label:'Лайки', key:'like', ids:['LIKE_YES','DISLIKE_NO'], names:tagNames},
+        
+        // КАТЕГОРИЯ (ФИКСИРОВАННЫЙ ПОРЯДОК)
+        {label:'Категория', key:'category', 
+         ids:['CAT_01','CAT_02','CAT_03','CAT_04','CAT_05','CAT_06','CAT_08','CAT_09','CAT_07'], 
+         names:catNames},
+         
+        // ТИП (АЛФАВИТ + ДРУГОЕ В НАЧАЛЕ)
+        {label:'Тип', key:'type', ids:getSortedTypeIds(), names:typeNames},
+        
+        // ЦВЕТ (ФИКСИРОВАННЫЙ ПОРЯДОК)
+        {label:'Цвет', key:'color', 
+         ids:['C_01','C_02','C_03','C_04','C_08','C_05','C_06','C_15','C_07','C_10','C_11','C_12','C_13','C_14','C_16','C_17','C_18','C_09'], 
+         names:colorNames},
+         
+        // СТАТУС (ФИКСИРОВАННЫЙ ПОРЯДОК)
+        {label:'Статус', key:'status', 
+         ids:['ST_OK','ST_WASH','ST_SELL','ST_THINK','ST_TRASH','ST_SMALL','ST_BIG','ST_NOTWEAR','ST_OTHER'], 
+         names:statusNames},
+         
+        // МЕСТО (ФИКСИРОВАННЫЙ ПОРЯДОК)
+        {label:'Место', key:'place', 
+         ids:['PL_01','PL_02','PL_03','PL_04','PL_05','PL_06','PL_07'], 
+         names:placeNames},
+         
+        // СЕЗОН (ОСТАВЛЯЕМ КАК ЕСТЬ, ТАК КАК ИХ МАЛО)
+        {label:'Сезон', key:'season', 
+         ids:seasonsItemList.map(s=>s.id), 
+         names:Object.fromEntries(seasonsItemList.map(s=>[s.id,s.name]))},
+         
+        // НАЗНАЧЕНИЕ (ФИКСИРОВАННЫЙ ПОРЯДОК)
+        {label:'Назначение', key:'occasion', 
+         ids:[
+             'O_WALK_FAST','O_WALK_NICE','O_HOME','O_WORK','O_SPORT',
+             'O_THEATER','O_NY','O_BEACH','O_HIKE',
+             'O_GARDEN_KR','O_HOME_KR','O_TRAVEL','O_SPBMSK','O_OTHER'
+         ], 
+         names:Object.fromEntries(occasionsItemList.map(o=>[o.id,o.name]))}
+    ];
+}
+
+function initFilters(){
+    const c=document.getElementById('filterBody'), r=c.querySelector('.reset-all-btn'), cr=c.querySelector('.cache-refresh-btn'), p=c.querySelector('.preset-controls');
+    c.innerHTML=''; c.appendChild(r); c.appendChild(cr); c.appendChild(p);
+
+// === ПОЛЕ ПОИСКА ПО ЗАМЕТКАМ ===
+const noteSearchSection = document.createElement('div');
+noteSearchSection.className = 'filter-section note-search-wrap';
+noteSearchSection.innerHTML = `
+    <div class="filter-section-title">💬 Поиск по комментариям</div>
+    <input type="text" class="note-search-input" id="noteSearchInput" placeholder="Например: Zara, подарок...">
+`;
+c.appendChild(noteSearchSection);
+
+// Обработчик ввода
+const noteInput = noteSearchSection.querySelector('#noteSearchInput');
+noteInput.addEventListener('input', (e) => {
+    activeFilters.noteSearch = e.target.value.toLowerCase().trim();
+    applyFilters();
+});
+
+// Восстанавливаем значение при перезагрузке фильтров
+if (activeFilters.noteSearch) noteInput.value = activeFilters.noteSearch;
+// ================================
+
+console.log("🔍 Отладка initFilters:");
+    console.log("typeNames:", typeNames);
+    console.log("catNames:", catNames);
+    console.log("colorNames:", colorNames);
+    console.log("statusNames:", statusNames);
+    console.log("placeNames:", placeNames);
+
+    getFilterGroups().forEach(g=>{
+        const s=document.createElement('div'); s.className='filter-section';
+        if(g.isSpecial){
+            s.innerHTML=`<div class="filter-section-title">${g.label}</div>`;
+            const o=document.createElement('div'); o.className='filter-options';
+            const f=document.createElement('div'); f.className='filter-option'+(activeFilters.fav?' active':''); f.textContent='Избранное';
+            f.onclick=()=>{ activeFilters.fav=!activeFilters.fav; f.classList.toggle('active'); saveFilters(); applyFilters(); checkPresetMatch() }; o.appendChild(f);
+            const ft=document.createElement('div'); ft.className='filter-option'+(activeFilters.often?' active':''); ft.textContent='Часто ношу';
+ft.onclick=()=>{ activeFilters.often=!activeFilters.often; ft.classList.toggle('active'); saveFilters(); applyFilters(); checkPresetMatch() }; o.appendChild(ft);
+
+// === НОВАЯ КНОПКА "НЕ НОШУ" ===
+const nw=document.createElement('div'); nw.className='filter-option'+(activeFilters.notWear?' active':''); nw.textContent='Не ношу';
+nw.onclick=()=>{ activeFilters.notWear=!activeFilters.notWear; nw.classList.toggle('active'); saveFilters(); applyFilters(); checkPresetMatch() }; o.appendChild(nw);
+// ==============================
+
+s.appendChild(o)
+        }else{
+            s.innerHTML=`<div class="filter-section-title">${g.label} <span class="reset-group-btn" onclick="resetGroup('${g.key}')">Сброс</span></div>`;
+            const o=document.createElement('div'); o.className='filter-options'; o.id=`options-${g.key}`;
+            
+            // Проверяем, есть ли данные для этого фильтра
+            if (!g.ids || g.ids.length === 0) {
+                console.warn(`⚠️ Нет данных (g.ids пуст) для фильтра: ${g.label}`);
+                console.log("g.names:", g.names);
+            }
+
+            g.ids.forEach(id=>{
+                const name = g.names?.[id] || `???${id}`;
+                const b=document.createElement('div'); b.className='filter-option'+(activeFilters[g.key].has(id)?' active':'');
+                b.textContent=name; b.dataset.value=id;
+                b.onclick=()=>toggleFilterOption(g.key,id,b); o.appendChild(b)
+            }); s.appendChild(o)
+        }
+        c.appendChild(s)
+    });
+    updateFilterCount()
+}
+function getSortedTypeIds() {
+    const typeEntries = Object.entries(typeNames);
+    // Сначала ищем "Другое" (T_31)
+    const otherEntry = typeEntries.find(([id]) => id === 'T_31');
+    // Остальные сортируем по названию (алфавит)
+    const otherTypes = typeEntries.filter(([id]) => id !== 'T_31').sort((a, b) => a[1].localeCompare(b[1]));
+    // Собираем: [Другое] + [остальные по алфавиту]
+    const sorted = otherEntry ? [otherEntry, ...otherTypes] : otherTypes;
+    return sorted.map(([id]) => id);
+}
+
+function checkPresetMatch(){const p=JSON.parse(localStorage.getItem('filter_preset')||'{}'),b=document.getElementById('loadPresetBtn');let m=true;Object.keys(activeFilters).forEach(k=>{if(activeFilters[k] instanceof Set){if(Array.from(activeFilters[k]).sort().join(',')!==(p[k] instanceof Array?p[k].sort().join(','):''))m=false}else if(activeFilters[k]!==p[k])m=false});if(m&&Object.keys(p).length>0)b.classList.add('active-preset');else b.classList.remove('active-preset')}
+function savePreset(){const s={};Object.keys(activeFilters).forEach(k=>{if(activeFilters[k] instanceof Set)s[k]=Array.from(activeFilters[k]);else s[k]=activeFilters[k]});localStorage.setItem('filter_preset',JSON.stringify(s));document.getElementById('loadPresetBtn').classList.add('visible');checkPresetMatch();showToast(' Настройки сохранены')}
+function loadPreset(){try{const p=JSON.parse(localStorage.getItem('filter_preset'));if(!p)return;Object.keys(p).forEach(k=>{if(p[k] instanceof Array)activeFilters[k]=new Set(p[k]);else activeFilters[k]=p[k]});initFilters();saveFilters();updateFilterCount();applyFilters();checkPresetMatch();showToast('⚡ Применено')}catch(e){}}
+function resetAllFilters(){Object.keys(activeFilters).forEach(k=>{if(activeFilters[k] instanceof Set)activeFilters[k].clear();else activeFilters[k]=false});activeFilters.search='';document.getElementById('searchInput').value='';document.getElementById('clearSearch').style.display='none';initFilters();saveFilters();updateFilterCount();applyFilters();checkPresetMatch();showToast(' Сброшено')}
+function toggleFilterOption(k,v,b){if(activeFilters[k].has(v)){activeFilters[k].delete(v);b.classList.remove('active')}else{activeFilters[k].add(v);b.classList.add('active')}saveFilters();updateFilterCount();applyFilters();checkPresetMatch()}
+function resetGroup(k){activeFilters[k].clear();document.querySelectorAll(`#options-${k} .filter-option`).forEach(b=>b.classList.remove('active'));saveFilters();updateFilterCount();applyFilters();checkPresetMatch()}
+function saveFilters(){try{const s={};Object.keys(activeFilters).forEach(k=>{if(activeFilters[k] instanceof Set)s[k]=Array.from(activeFilters[k]);else s[k]=activeFilters[k]});localStorage.setItem('active_filters',JSON.stringify(s))}catch(e){}}
+function updateFilterCount(){let c=0;Object.keys(activeFilters).forEach(k=>{if(activeFilters[k] instanceof Set)c+=activeFilters[k].size;else if(activeFilters[k])c++});const b=document.getElementById('filterCount');b.textContent=c;b.style.display=c>0?'inline-block':'none'}
+function toggleFilterSidebar(){const f=document.getElementById('filterSidebar'),l=document.getElementById('lookSidebar');if(l.classList.contains('open'))l.classList.remove('open');f.classList.toggle('open')}
+async function forceCacheRefresh() { wardrobeCache.clear(); showToast('🔄 Обновление данных...'); await initAppWithCache(); }
+
+function render(items){
+    const g=document.getElementById('gallery');
+    g.innerHTML='';
+    if(!items.length){
+        g.innerHTML='<p style="text-align:center;width:100%;color:#999;grid-column:1/-1;padding:40px">Пусто</p>';
+        return
+    }
+    items.forEach(it=>{
+        const c=document.createElement('div');
+        c.className='card'+(selectedNames.has(it.name)?' selected':'');
+        c.dataset.name=it.name;
+        c.onclick = (e) => {
+            if(!e.target.classList.contains('card-check')) {
+                toggleSelect(it.name);
+            }
+        };
+        c.innerHTML=`
+            <div class="card-check" onclick="event.stopPropagation();toggleSelect('${it.name}')">✓</div>
+            <div class="card-img-wrap">
+                ${it.image ? `<img src="${it.image}" loading="lazy">` : ''}
+            </div>
+            <div class="card-info">
+                <div class="card-name">${it.name}</div>
+            </div>`;
+        g.appendChild(c)
+    })
+}
+
+function applyFilters(){
+    let f=data;
+    Object.keys(activeFilters).forEach(k=>{
+        if(k==='search'||k==='often'||k==='fav')return;
+        const s=activeFilters[k];
+        if(s instanceof Set&&s.size>0){
+            const a=Array.from(s);
+            if(['season','occasion','like'].includes(k))f=f.filter(i=>a.some(t=>i.tags.includes(t)));
+            else f=f.filter(i=>a.includes(i[k]))
+        }
+    });
+    if(activeFilters.often)f=f.filter(i=>i.tags.includes('LIKE_OFTEN'));
+    if(activeFilters.fav)f=f.filter(i=>i.tags.includes('LIKE_FAV'));
+    // === НОВЫЙ ФИЛЬТР "НЕ НОШУ" ===
+if(activeFilters.notWear)f=f.filter(i=>i.tags.includes('NOT_WEAR'));
+// ==============================
+    if(activeFilters.search)f=f.filter(i=>i.name.toLowerCase().includes(activeFilters.search));
+
+// === ФИЛЬТР ПО ЗАМЕТКАМ ===
+if (activeFilters.noteSearch) {
+    const query = activeFilters.noteSearch;
+    f = f.filter(item => 
+        item.tags.some(tag => tag.startsWith('NOTE_') && tag.substring(5).toLowerCase().includes(query))
+    );
+}
+// ========================
+
+filteredItemsCache=f;
+render(f)
+}
+
+function toggleSelect(n){
+    if(selectedNames.has(n)) selectedNames.delete(n);
+    else selectedNames.add(n);
+    updateSelectionUI();
+    document.querySelectorAll('.card').forEach(c => {
+        if(c.dataset.name === n) {
+            c.classList.toggle('selected', selectedNames.has(n));
+        }
+    });
+}
+
+function clearSelection(){selectedNames.clear();updateSelectionUI();document.querySelectorAll('.card').forEach(c=>c.classList.remove('selected'))}
+function updateSelectionUI(){document.getElementById('selectedCount').textContent=selectedNames.size;document.getElementById('bottomBar').classList.toggle('visible',selectedNames.size>0)}
+const si=document.getElementById('searchInput'),cb=document.getElementById('clearSearch');
+si.addEventListener('input',e=>{activeFilters.search=e.target.value.toLowerCase().trim();cb.style.display=activeFilters.search?'flex':'none';saveFilters();applyFilters();checkPresetMatch()});
+function clearSearchField(){si.value='';activeFilters.search='';cb.style.display='none';si.focus();saveFilters();applyFilters();checkPresetMatch()}
+function toggleWhenMenu(){document.getElementById('whenMenu').classList.toggle('open')}
+
+// === ЛОГИКА ОБРАЗОВ ===
+function initLooksFiltersUI(){
+    const m=document.getElementById('lfMarks');m.innerHTML='';
+    [{id:'fav',name:'⭐ Избранное'},{id:'often',name:' Часто ношу'},{id:'notags',name:'Без меток'}, {id:'local', name:'☁️ Только локальные'}]
+    .forEach(x=>{ const b=document.createElement('div'); let isActive = false; if(x.id==='fav') isActive = lfFav; if(x.id==='often') isActive = lfOften; if(x.id==='notags') isActive = lfNoTags; if(x.id==='local') isActive = lfLocalOnly; b.className='lf-option'+(isActive?' active':'');b.textContent=x.name; b.onclick=()=>{ if(x.id==='fav') lfFav=!lfFav; if(x.id==='often') lfOften=!lfOften; if(x.id==='notags') lfNoTags=!lfNoTags; if(x.id==='local') lfLocalOnly=!lfLocalOnly; looksSlideIndex=0;initLooksFiltersUI();renderLooksFullscreen();updateLooksFilterCount();checkLooksPresetMatch() };m.appendChild(b) });
+    const lk=document.getElementById('lfLikes');lk.innerHTML=''; likesList.forEach(l=>{ const b=document.createElement('div'); b.className='lf-option'+(lfLikes.has(l.id)?' active':'');b.textContent=l.name; b.onclick=()=>{ if(lfLikes.has(l.id)) lfLikes.delete(l.id); else lfLikes.add(l.id); looksSlideIndex=0;initLooksFiltersUI();renderLooksFullscreen();updateLooksFilterCount();checkLooksPresetMatch() };lk.appendChild(b) });
+    const oc=document.getElementById('lfOccasions');oc.innerHTML=''; occasionsLookList.forEach(o=>{ const b=document.createElement('div'); b.className='lf-option'+(lfOccasions.has(o.id)?' active':'');b.textContent=o.name; b.onclick=()=>{ if(lfOccasions.has(o.id)) lfOccasions.delete(o.id); else lfOccasions.add(o.id); looksSlideIndex=0;initLooksFiltersUI();renderLooksFullscreen();updateLooksFilterCount();checkLooksPresetMatch() };oc.appendChild(b) });
+    const se=document.getElementById('lfSeasons');se.innerHTML=''; seasonsLookList.forEach(s=>{ const b=document.createElement('div'); b.className='lf-option'+(lfSeasons.has(s.id)?' active':'');b.textContent=s.name; b.onclick=()=>{ if(lfSeasons.has(s.id)) lfSeasons.delete(s.id); else lfSeasons.add(s.id); looksSlideIndex=0;initLooksFiltersUI();renderLooksFullscreen();updateLooksFilterCount();checkLooksPresetMatch() };se.appendChild(b) })
+}
+function updateLooksFilterCount(){ let c=0; if(lfFav) c++; if(lfOften) c++; if(lfNoTags) c++; if(lfLocalOnly) c++; c += lfOccasions.size + lfSeasons.size + lfLikes.size; const b=document.getElementById('looksFilterCount'); b.textContent=c; b.style.display=c>0?'inline-block':'none'; }
+function getFilteredLooks(){ let f=savedLooks; if(lfLocalOnly) f = f.filter(l => l.source === 'local'); if(lfNoTags) f=f.filter(l=>!l.tags?.some(t=>t.startsWith('OO_') || t.startsWith('OS_') || t.startsWith('OLIKE_') || t.startsWith('ODISLIKE_'))); else { if(lfFav || lfOften) { f=f.filter(l=> { if(lfFav && l.tags?.includes('OLIKE_FAV')) return true; if(lfOften && l.tags?.includes('OLIKE_OFTEN')) return true; return false; }); } } if(lfLikes.size > 0) f=f.filter(l => l.tags && Array.from(lfLikes).some(tag => l.tags.includes(tag))); if(lfOccasions.size > 0) f=f.filter(l => l.tags && Array.from(lfOccasions).some(tag => l.tags.includes(tag))); if(lfSeasons.size > 0) f=f.filter(l => l.tags && Array.from(lfSeasons).some(tag => l.tags.includes(tag))); return f }
+function checkLooksPresetMatch(){ const p=JSON.parse(localStorage.getItem('looks_filter_preset')||'{}'); const b=document.getElementById('loadLooksPresetBtn'); let m=true; if(lfFav !== p.lfFav) m=false; if(lfOften !== p.lfOften) m=false; if(lfNoTags !== p.lfNoTags) m=false; if(lfLocalOnly !== p.lfLocalOnly) m=false; if(Array.from(lfOccasions).sort().join(',') !== (p.lfOccasions||[]).sort().join(',')) m=false; if(Array.from(lfSeasons).sort().join(',') !== (p.lfSeasons||[]).sort().join(',')) m=false; if(Array.from(lfLikes).sort().join(',') !== (p.lfLikes||[]).sort().join(',')) m=false; if(m && Object.keys(p).length>0) b.classList.add('active-preset'); else b.classList.remove('active-preset'); }
+function saveLooksPreset(){ const s = { lfFav, lfOften, lfNoTags, lfLocalOnly, lfOccasions: Array.from(lfOccasions), lfSeasons: Array.from(lfSeasons), lfLikes: Array.from(lfLikes) }; localStorage.setItem('looks_filter_preset', JSON.stringify(s)); document.getElementById('loadLooksPresetBtn').classList.add('visible'); checkLooksPresetMatch(); showToast('💾 Настройки фильтров образов сохранены'); }
+function loadLooksPreset(){ try{ const p=JSON.parse(localStorage.getItem('looks_filter_preset')); if(!p) return; lfFav = !!p.lfFav; lfOften = !!p.lfOften; lfNoTags = !!p.lfNoTags; lfLocalOnly = !!p.lfLocalOnly; lfOccasions = new Set(p.lfOccasions || []); lfSeasons = new Set(p.lfSeasons || []); lfLikes = new Set(p.lfLikes || []); looksSlideIndex=0; initLooksFiltersUI(); renderLooksFullscreen(); updateLooksFilterCount(); checkLooksPresetMatch(); showToast(' Настройки фильтров образов применены'); }catch(e){console.error(e);} }
+function toggleLooksFilters(){document.getElementById('looksFilterSidebar').classList.toggle('open')}
+function resetLooksFilters(){ lfFav=false;lfOften=false;lfNoTags=false;lfOccasion='';lfSeason='';lfLocalOnly=false;lfLike=''; lfOccasions.clear(); lfSeasons.clear(); lfLikes.clear();// === НОВАЯ СТРОКА: Очищаем поле поиска и саму переменную ===
+    const searchInput = document.getElementById('lookItemSearchInput');
+    if (searchInput) {
+        searchInput.value = '';
+        lookItemSearchQuery = '';
+    }
+    // ==========================================
+     looksSlideIndex=0;initLooksFiltersUI();renderLooksFullscreen();updateLooksFilterCount();checkLooksPresetMatch();showToast(' Фильтры сброшены') }
+
+document.addEventListener('click',e=>{ if(!e.target.closest('.btn-wear')&&!e.target.closest('.when-menu'))document.getElementById('whenMenu').classList.remove('open'); if(!e.target.closest('.fullscreen-look-action-btn.wear')&&!e.target.closest('.look-wear-menu'))document.querySelectorAll('.look-wear-menu').forEach(m=>m.classList.remove('open')); if(!e.target.closest('.look-manage-btn')&&!e.target.closest('.manage-menu')){closeManageMenu()} if(!e.target.closest('.plan-manage-wrap'))document.getElementById('planManageMenu').classList.remove('open'); if(!e.target.closest('.fullscreen-look-action-btn.manage') && !e.target.closest('.looks-actions-menu-inline')){ document.querySelectorAll('.looks-actions-menu-inline').forEach(m=>m.classList.remove('open')); } });
+
+function openItemModalFromSelection(){ 
+    let t=null; 
+    if(selectedNames.size>0) {
+        // Берем ПОСЛЕДНЮЮ выделенную вещь (индекс size - 1)
+        const namesArray = Array.from(selectedNames);
+        t = namesArray[namesArray.length - 1]; 
+    }
+    else if(filteredItemsCache.length>0) t=filteredItemsCache[0].name; 
+    
+    if(!t){showToast('⚠️ Пусто');return} 
+    
+    currentModalIndex=filteredItemsCache.findIndex(i=>i.name===t); 
+    if(currentModalIndex===-1) currentModalIndex=0; 
+    
+    showCurrentModalItem(); 
+    document.getElementById('itemModalOverlay').classList.add('open'); 
+    document.body.style.overflow='hidden'; 
+}
+
+function navigateModal(d){ 
+    currentModalIndex+=d; 
+    if(currentModalIndex<0) currentModalIndex=filteredItemsCache.length-1; 
+    if(currentModalIndex>=filteredItemsCache.length) currentModalIndex=0; 
+    showCurrentModalItem(); 
+}
+
+function showCurrentModalItem(){ 
+    if(!filteredItemsCache.length) return; 
+    const it=filteredItemsCache[currentModalIndex];
+    console.log(" Отладка внутри showCurrentModalItem:");
+console.log("it.status:", it.status);
+console.log("statusNames[it.status]:", statusNames[it.status]);
+console.log("Весь statusNames:", statusNames); 
+    document.getElementById('itemModalImg').src=it.image; 
+    document.getElementById('itemModalTitle').textContent=it.name; 
+    document.getElementById('modalCounter').textContent=`${currentModalIndex+1} / ${filteredItemsCache.length}`; 
+    document.getElementById('modalTagsList').classList.remove('open'); 
+    document.querySelector('.modal-tags-toggle').textContent='🏷️ Показать теги'; 
+        const tc=document.getElementById('modalTagsList'); tc.innerHTML=''; 
+    
+    // 1. Показываем Место (Place)
+    const pt=placeNames[it.place]||it.place||''; 
+    if(pt){
+        const p=document.createElement('span');
+        p.className='modal-tag place-tag';
+        p.textContent='📍 ' + pt;
+        tc.appendChild(p);
+    }
+
+    // 2. Показываем Статус (Status) <--- ВОТ ЭТОГО НЕ ХВАТАЛО!
+    const st=statusNames[it.status]||it.status||'';
+    if(st && it.status){ // Показываем, только если статус не пустой
+        const s=document.createElement('span');
+        s.className='modal-tag';
+        s.textContent='📊 ' + st;
+        tc.appendChild(s);
+    }
+
+    // === ПОКАЗЫВАЕМ КОММЕНТАРИЙ ОТДЕЛЬНО ===
+    const noteTag = it.tags.find(t => t.startsWith('NOTE_'));
+    if (noteTag) {
+        const noteDiv = document.createElement('div');
+        noteDiv.className = 'modal-note-block';
+        noteDiv.textContent = '💬 ' + noteTag.substring(5);
+        tc.appendChild(noteDiv);
+    }
+
+    // 3. Показываем остальные теги (пропускаем NOTE_)
+    it.tags.forEach(tid=>{
+        if (tid.startsWith('NOTE_')) return; // Скрываем тех. тег из списка
+        if(tagNames[tid]){
+            const t=document.createElement('span');
+            t.className='modal-tag';
+            t.textContent=tagNames[tid];
+            tc.appendChild(t);
+        }
+    });
+}
+
+function toggleModalTags(){ 
+    const l=document.getElementById('modalTagsList'),b=document.querySelector('.modal-tags-toggle'); 
+    if(l.classList.contains('open')){l.classList.remove('open');b.textContent='🏷️ Показать теги'} 
+    else{l.classList.add('open');b.textContent='🏷️ Скрыть теги'} 
+}
+
+function closeItemModal(){ 
+    document.getElementById('itemModalOverlay').classList.remove('open'); 
+    document.body.style.overflow=''; 
+}
+
+function addCurrentToLook(){ 
+    if(!filteredItemsCache.length) return; 
+    const it=filteredItemsCache[currentModalIndex]; 
+    if(!lookItems.find(i=>i.name===it.name)){ 
+        lookItems.push({name:it.name,image:it.image,tempFav:it.tags.includes('LIKE_FAV'),tempStatus:it.status}); 
+        saveLook();renderLookList();showToast('✅ Добавлено в лук'); 
+    }else showToast('ℹ️ Уже в луке'); 
+    document.getElementById('lookSidebar').classList.add('open'); 
+}
+
+function openGallery(){ 
+    document.getElementById('filterSidebar').classList.remove('open'); 
+    document.getElementById('lookSidebar').classList.remove('open'); 
+    document.getElementById('planOverlay').classList.remove('open'); 
+    document.getElementById('galleryOverlay').classList.add('open'); 
+    document.body.style.overflow='hidden';
+    initLooksFiltersUI();
+    renderLooksFullscreen();
+    updateLooksFilterCount();
+    checkLooksPresetMatch() 
+}
+
+function closeGallery(){ 
+    document.getElementById('galleryOverlay').classList.remove('open'); 
+    document.body.style.overflow=''; 
+    document.getElementById('looksFilterSidebar').classList.remove('open') 
+}
+
+function buildGridHtml(items){ 
+    const isSingle = items.length === 1; 
+    let gh = ''; 
+    
+    items.forEach(it => { 
+        let itemName = "";
+        if (typeof it === 'object' && it !== null) {
+            itemName = it.name || it.Name_File || ""; 
+        } else {
+            itemName = String(it);
+        }
+        const foundItem = data.find(x => x.name.trim() === itemName.trim());
+        const img = foundItem ? foundItem.image : ''; 
+        gh += `<div class="fullscreen-look-item"><img src="${img}" loading="lazy"></div>` 
+    }); 
+    return `<div class="fullscreen-look-grid${isSingle?' single-item':''}">${gh}</div>` 
+}
+
+function renderLooksFullscreen(){ 
+    const c=document.getElementById('looksFullscreen'),n=document.getElementById('looksNav'),f=getFilteredLooks(); 
+    const nameEl=document.getElementById('galleryLookNameInline'); 
+    
+    if(!f.length){
+        c.innerHTML='<div class="fullscreen-empty">Нет образов по фильтрам</div>';
+        n.innerHTML='';
+        nameEl.textContent='';
+        return
+    } 
+    
+    if(looksSlideIndex>=f.length) looksSlideIndex=f.length-1; 
+    if(looksSlideIndex<0) looksSlideIndex=0; 
+    
+    const l=f[looksSlideIndex]; 
+    const sourceIcon = l.source === 'db' ? '🗄️' : '☁️'; 
+    nameEl.textContent = `${sourceIcon} Образ ${l.name}`; 
+    
+    const realIdx=savedLooks.indexOf(l); 
+    
+    c.innerHTML=`<div class="fullscreen-look-actions-row">
+        <div style="position:relative">
+            <button class="fullscreen-look-action-btn wear" onclick="toggleLookWearMenu(this)">📅 Надеть</button>
+            <div class="look-wear-menu">
+                <button class="look-wear-item" onclick="planLookFromGallery(${realIdx},'tomorrow')">Завтра</button>
+                <button class="look-wear-item" onclick="planLookFromGallery(${realIdx},'dayafter')">Послезавтра</button>
+                <button class="look-wear-item" onclick="planLookFromGallery(${realIdx},'day3')">На 3 день</button>
+            </div>
+        </div>
+        <button class="fullscreen-look-action-btn del" onclick="deleteLook(${realIdx})">🗑️ Удалить</button>
+        <div style="position:relative">
+            <button class="fullscreen-look-action-btn manage" onclick="toggleInlineActionsMenu(this)">️ Упр-е ▾</button>
+            <div class="looks-actions-menu-inline">
+                <button class="looks-actions-item" onclick="addToLook2()">👗 В лук2</button>
+                <button class="looks-actions-item" onclick="copyLookComposition(${realIdx})">📋 Состав</button>
+                
+                <!-- НОВЫЕ КНОПКИ -->
+                <button class="looks-actions-item" style="color:#2196F3;" onclick="addLookToDatabaseDirect(${realIdx})">📥 Сохр-ть в базу (напрямую)</button>
+                <button class="looks-actions-item" style="color:#c62828;" onclick="removeLookFromDatabaseDirect(${realIdx})">🗑️ Удалить из базы (напрямую)</button>
+                <button class="looks-actions-item" style="color:#4CAF50;" onclick="setLookFavoriteDirect(${realIdx}, true)">⭐ В изб-е (напрямую)</button>
+                <button class="looks-actions-item" style="color:#FF9800;" onclick="setLookFavoriteDirect(${realIdx}, false)">❌ Убрать из изб-го (напрямую)</button>
+                
+                <button class="looks-actions-item" onclick="copyCurrentLookId(${realIdx})">📋 Копировать ID</button>
+                <button class="looks-actions-item" onclick="sendLookToDb(${realIdx})">📤 В базу (Боту)</button>
+                <button class="looks-actions-item danger" onclick="deleteLookFromDb(${realIdx})">🗑️ Удалить из базы (Боту)</button>
+                <button class="looks-actions-item" onclick="exportLooksToTable()">💾 Экспорт в таблицу</button><button class="looks-actions-item" onclick="openEditTagsModal(${realIdx})">✏️ Редак-ть теги в базе</button>
+            </div>
+        </div>
+    </div>${buildGridHtml(l.items)}`; 
+    
+    n.innerHTML=`<button class="fullscreen-nav-btn" onclick="navLooks(-1)">‹</button>
+    <div class="fullscreen-counter">${looksSlideIndex+1} / ${f.length}</div>
+    <button class="fullscreen-nav-btn" onclick="navLooks(1)">›</button>` 
+}
+
+function toggleInlineActionsMenu(btn){ 
+    const menu = btn.nextElementSibling; 
+    const isOpen = menu.classList.contains('open'); 
+    document.querySelectorAll('.looks-actions-menu-inline').forEach(m=>m.classList.remove('open')); 
+    if(!isOpen) menu.classList.add('open'); 
+}
+
+function navLooks(d){const f=getFilteredLooks();looksSlideIndex+=d;if(looksSlideIndex<0)looksSlideIndex=f.length-1;if(looksSlideIndex>=f.length)looksSlideIndex=0;renderLooksFullscreen()}
+
+function copyLookComposition(idx){ 
+    const look = savedLooks[idx]; 
+    let names = []; 
+    if(Array.isArray(look.items)) { names = look.items.map(i => typeof i === 'string' ? i : i.name); } 
+    else if(typeof look.items === 'string') { try { names = JSON.parse(look.items); } catch(e) { names = [look.items]; } } 
+    safeCopy(names.join(',')); 
+    showToast('📋 Состав (через запятую)'); 
+    document.querySelectorAll('.looks-actions-menu-inline').forEach(m=>m.classList.remove('open')); 
+}
+
+function deleteLook(idx) {
+    const look = savedLooks[idx];
+    if (!look) return;
+    
+    // Настраиваем универсальное окно под удаление локального образа
+    document.getElementById('universalConfirmTitle').textContent = '🗑️ Удалить образ?';
+    document.getElementById('universalConfirmText').textContent = `Вы уверены, что ВРЕМЕННО хотите удалить образ "${look.name}" из памяти браузера? Будьте внимательны: для удаления образа из базы навсегда необходимо использовать другую кнопку Удалить из базы (напрямую) внутри кнопки Упр-е.`;
+    document.getElementById('universalConfirmAction').value = 'deleteLocalLook';
+    document.getElementById('universalConfirmIdx').value = idx;
+    
+    document.getElementById('universalConfirmOverlay').classList.add('open');
+}
+
+function deleteLookFromDb(idx) {
+    const look = savedLooks[idx];
+    if (!look) return;
+    
+    // Настраиваем универсальное окно под команду для бота
+    document.getElementById('universalConfirmTitle').textContent = '🤖 Команда для Бота';
+    document.getElementById('universalConfirmText').innerHTML = `Вы готовы скопировать команду удаления образа <b>"${look.name}"</b> навсегда?<br><br>Эта команда предназначена для отправки Боту.`;
+    document.getElementById('universalConfirmAction').value = 'copyBotDeleteCmd';
+    document.getElementById('universalConfirmIdx').value = idx;
+    
+    document.getElementById('universalConfirmOverlay').classList.add('open');
+}
+
+function extractNames(items) { 
+    if (!items) return []; 
+    if (typeof items === 'string') { 
+        try { items = JSON.parse(items); } catch(e) { return [items]; } 
+    } 
+    if (!Array.isArray(items)) return []; 
+    return items.map(i => typeof i === 'string' ? i : (i.name || '')); 
+}
+
+async function generateLookHash(items) { 
+    const names = extractNames(items); 
+    const sorted = [...names].sort((a, b) => a.localeCompare(b)); 
+    const key = sorted.join(','); 
+    let hash = 0; 
+    for (let i = 0; i < key.length; i++) { 
+        const char = key.charCodeAt(i); 
+        hash = ((hash << 5) - hash) + char; 
+        hash = hash & hash; 
+    } 
+    return Math.abs(hash).toString(16); 
+}
+
+function findDuplicateLook(items) { 
+    const names = extractNames(items); 
+    const sorted = [...names].sort((a, b) => a.localeCompare(b)); 
+    const key = sorted.join(','); 
+    return savedLooks.find(look => { 
+        const lookNames = extractNames(look.items); 
+        const lookSorted = [...lookNames].sort((a,b)=>a.localeCompare(b)); 
+        return lookSorted.join(',') === key; 
+    }); 
+}
+
+function getUniqueName(baseName) { 
+    let name = baseName; let counter = 2; 
+    while (savedLooks.some(l => l.name === name)) { name = `${baseName}_${counter}`; counter++; } 
+    return name; 
+}
+
+function generateSmartName(items) { 
+    const names = extractNames(items); 
+    if (!names || names.length === 0) return `Образ_${new Date().toLocaleDateString()}`; 
+    const shortName = names[0].split('_')[0].substring(0, 10); 
+    const dateStr = new Date().toLocaleDateString('ru-RU', {day: '2-digit', month: '2-digit'}); 
+    return getUniqueName(`${shortName}_${dateStr}`); 
+}
+
+function toggleManageMenu(){document.getElementById('manageMenu').classList.toggle('open')}
+function closeManageMenu(){ 
+    document.getElementById('manageMenu').classList.remove('open'); 
+    document.querySelectorAll('.submenu').forEach(s=>{s.classList.remove('open');s.classList.remove('open-left')}); 
+    document.querySelectorAll('.subsub').forEach(s=>{s.classList.remove('open');s.classList.remove('open-left')}); 
+}
+function toggleSubmenu(id, btnEl){ 
+    const submenu = document.getElementById(id); 
+    if(submenu.classList.contains('open')){ 
+        submenu.classList.remove('open'); submenu.classList.remove('open-left'); 
+        submenu.querySelectorAll('.subsub').forEach(s => { s.classList.remove('open'); s.classList.remove('open-left'); }); 
+        return; 
+    } 
+    document.querySelectorAll('.submenu').forEach(s=>{ if(s.id !== id){ s.classList.remove('open'); s.classList.remove('open-left'); }}); 
+    document.querySelectorAll('.subsub').forEach(s=>{ s.classList.remove('open'); s.classList.remove('open-left'); }); 
+    const rect = btnEl.getBoundingClientRect(); 
+    if(rect.right + 220 + 16 > window.innerWidth){ submenu.classList.add('open-left'); } 
+    submenu.classList.add('open'); 
+}
+function toggleSubSub(id, btnEl){ 
+    document.querySelectorAll('.subsub').forEach(s=>{if(s.id!==id){s.classList.remove('open');s.classList.remove('open-left')}}); 
+    const subsub = document.getElementById(id); 
+    const isOpening = !subsub.classList.contains('open'); 
+    if(isOpening && btnEl.getBoundingClientRect().right + 180 + 16 > window.innerWidth){ subsub.classList.add('open-left'); } 
+    subsub.classList.toggle('open'); 
+}
+function updateManageBar(){ 
+    const bar = document.getElementById('lookManageBar'); 
+    if(selectedLookIndex >= 0 && lookItems.length > 0){ bar.classList.add('visible'); } 
+    else { bar.classList.remove('visible'); closeManageMenu(); } 
+}
+function renderLookList(){ 
+    const l = document.getElementById('lookList');
+    const u = document.getElementById('moveUpBtn');
+    const d = document.getElementById('moveDownBtn'); 
+    
+    if(!lookItems.length){ 
+        l.innerHTML = '<div class="look-empty">Пусто. Выберите вещи в галерее</div>'; 
+        u.disabled = true;
+        d.disabled = true;
+        selectedLookIndex = -1;
+        return; 
+    } 
+    
+    u.disabled = selectedLookIndex <= 0; 
+    d.disabled = selectedLookIndex >= lookItems.length - 1; 
+    l.innerHTML = ''; 
+    
+    lookItems.forEach((it, i) => { 
+        const el = document.createElement('div'); 
+        el.className = 'look-item-card' + (i === selectedLookIndex ? ' selected' : ''); 
+        
+        // Клик по карточке выбирает её, но клик по тексту названия - нет (чтобы можно было выделять)
+        el.onclick = (e) => {
+            if (!e.target.classList.contains('look-item-name')) {
+                selectLookItem(i);
+            }
+        };
+        
+        // Добавляем название файла под картинкой
+        el.innerHTML = `
+            <img class="look-thumb" src="${it.image}" loading="lazy">
+            <div class="look-item-name" title="${it.name}">${it.name}</div>
+            <button class="look-remove" onclick="event.stopPropagation();removeFromLook(${i})">✕</button>
+        `; 
+        
+        l.appendChild(el); 
+    }); 
+}
+function saveLook(){try{localStorage.setItem('current_look',JSON.stringify(lookItems))}catch(e){}}
+function getCurrentLookNames(){return lookItems.map(i=>i.name)}
+function dayLabel(d){return{tomorrow:'Завтра',dayafter:'Послезавтра',day3:'На 3 день'}[d]||d}
+function savePlans(){try{localStorage.setItem('wardrobe_plans',JSON.stringify(plans))}catch(e){}}
+function quickPlanFromSelection(day){ 
+    const n=Array.from(selectedNames);if(!n.length){showToast('⚠️ Выберите вещи');return} 
+    const s=JSON.stringify([...n].sort()); 
+    if(plans[day].some(p=>JSON.stringify(p.items.sort())===s)){showToast('ℹ️ Уже в плане');document.getElementById('whenMenu').classList.remove('open');return} 
+    plans[day].push({items:[...n],occasion:'',season:''});savePlans(); 
+    showToast(`📅 ${n.length} вещ. → "${dayLabel(day)}"`);document.getElementById('whenMenu').classList.remove('open') 
+}
+// 1. Функция для ВЕРХНЕЙ кнопки "Лук" (только открытие)
+function openLookBuilderOnly() {
+    document.getElementById('lookSidebar').classList.add('open');
+    if(lookItems.length > 0 && selectedLookIndex === -1) selectedLookIndex = 0;
+    renderLookList();
+    updateManageBar();
+}
+
+// 2. Функция для НИЖНЕЙ кнопки "В лук" (только добавление без открытия)
+function addToLookSilent() {
+    if (selectedNames.size === 0) {
+        showToast('⚠️ Сначала выберите вещи');
+        return;
+    }
+    
+    let addedCount = 0;
+    selectedNames.forEach(n => {
+        if (!lookItems.find(i => i.name === n)) {
+            const d = data.find(x => x.name === n);
+            lookItems.push({
+                name: n, 
+                image: d?.image || '', 
+                tempFav: d?.tags.includes('LIKE_FAV'), 
+                tempStatus: d?.status || 'ST_OK'
+            });
+            addedCount++;
+        }
+    });
+    
+    if (addedCount > 0) {
+        saveLook();
+        showToast(`✅ +${addedCount} вещ. в лук`);
+        // Обновляем список в фоне, чтобы при открытии всё было актуально
+        renderLookList();
+        updateManageBar();
+    } else {
+        showToast('ℹ️ Все выбранные вещи уже в луке');
+    }
+    
+    // Снимаем выделение после добавления (опционально)
+    clearSelection();
+}
+
+// 3. Старая функция теперь вызывает только открытие (для совместимости)
+function openLookBuilder() {
+    openLookBuilderOnly();
+}
+function closeLookBuilder(){document.getElementById('lookSidebar').classList.remove('open')}
+// === УНИВЕРСАЛЬНАЯ ОЧИСТКА КОНСТРУКТОРА ===
+function clearConstructor() {
+    if (!lookItems.length) { showToast('ℹ️ Конструктор уже пуст'); return; }
+    
+    // Настраиваем универсальное окно под конструктор
+    document.getElementById('universalConfirmTitle').textContent = '🗑️ Очистить конструктор?';
+    document.getElementById('universalConfirmText').textContent = 'Все выбранные вещи будут удалены из списка.';
+    document.getElementById('universalConfirmAction').value = 'clearLook';
+    document.getElementById('universalConfirmOverlay').classList.add('open');
+}
+function removeFromLook(i){lookItems.splice(i,1);if(selectedLookIndex>=lookItems.length)selectedLookIndex=lookItems.length-1;if(selectedLookIndex<0)selectedLookIndex=-1;saveLook();renderLookList();updateManageBar()}
+function selectLookItem(i){selectedLookIndex=i;renderLookList();updateManageBar()}
+function moveSelectedItemUp(){if(selectedLookIndex<=0)return;[lookItems[selectedLookIndex],lookItems[selectedLookIndex-1]]=[lookItems[selectedLookIndex-1],lookItems[selectedLookIndex]];selectedLookIndex--;saveLook();renderLookList()}
+function moveSelectedItemDown(){if(selectedLookIndex>=lookItems.length-1)return;[lookItems[selectedLookIndex],lookItems[selectedLookIndex+1]]=[lookItems[selectedLookIndex+1],lookItems[selectedLookIndex]];selectedLookIndex++;saveLook();renderLookList()}
+
+async function copyBotPlanAndSave(day){ 
+    const names=getCurrentLookNames();if(!names.length){showToast('❌ Лук пуст');return} 
+    const s=JSON.stringify([...names].sort()); 
+    if(!plans[day].some(p=>JSON.stringify(p.items.sort())===s)){plans[day].push({items:[...names],occasion:'',season:''});savePlans()} 
+    const cmd=`/plan ${day} ${names.join(',')}`; 
+    if (window.Telegram && window.Telegram.WebApp) { 
+        window.Telegram.WebApp.sendData(JSON.stringify({ action: 'plan', day, items: names })); 
+        showToast('✅ Данные отправлены боту!'); 
+    } else { await safeCopy(cmd); showToast('📋 Команда скопирована!'); } 
+    closeManageMenu(); 
+}
+async function copyBotBatchTag(){ 
+    const names=getCurrentLookNames();if(!names.length){showToast('❌ Лук пуст');return} 
+    const cmd=`/batch tag LIKE_FAV ${names.join(',')}`; 
+    if (window.Telegram && window.Telegram.WebApp) { 
+        window.Telegram.WebApp.sendData(JSON.stringify({ action: 'tag', tag: 'LIKE_FAV', items: names })); 
+        showToast('✅ Данные отправлены боту!'); 
+    } else { await safeCopy(cmd); showToast('📋 Команда скопирована!'); } 
+    closeManageMenu(); 
+}
+async function copyBotBatchTagRemove(){ 
+    const names=getCurrentLookNames();if(!names.length){showToast('❌ Лук пуст');return} 
+    const cmd=`/batch tag_remove LIKE_FAV ${names.join(',')}`; 
+    if (window.Telegram && window.Telegram.WebApp) { 
+        window.Telegram.WebApp.sendData(JSON.stringify({ action: 'untag', tag: 'LIKE_FAV', items: names })); 
+        showToast('✅ Данные отправлены боту!'); 
+    } else { await safeCopy(cmd); showToast('📋 Команда скопирована!'); } 
+    closeManageMenu(); 
+}
+async function sendStatusCommand(statusCode){ 
+    const names=getCurrentLookNames(); 
+    if(!names.length){showToast('❌ Лук пуст');return} 
+    const statusName = statusCode === 'ST_OK' ? 'Доступна' : 'Выкинуть'; 
+    const cmd = `/batch status ${statusCode} ${names.join(',')}`; 
+    if (window.Telegram && window.Telegram.WebApp) { 
+        window.Telegram.WebApp.sendData(JSON.stringify({ action: 'batch_status', status: statusCode, items: names })); 
+        showToast(`✅ Статус "${statusName}" отправлен боту!`); 
+    } else { 
+        await safeCopy(cmd); 
+        showToast(` Команда "${statusName}" скопирована!`); 
+    } 
+    closeManageMenu(); 
+}
+async function copyConstructorNames(){ 
+    const names=getCurrentLookNames();if(!names.length){showToast('❌ Лук пуст');return} 
+    await safeCopy(names.join(','));showToast(`📋 Скопировано ${names.length}`);closeManageMenu() 
+}
+function localPlanFromConstructor(day){ 
+    const names=getCurrentLookNames();if(!names.length){showToast('❌ Лук пуст');return} 
+    const s=JSON.stringify([...names].sort()); 
+    if(plans[day].some(p=>JSON.stringify(p.items.sort())===s)){showToast('ℹ️ Уже в плане');closeManageMenu();return} 
+    plans[day].push({items:[...names],occasion:'',season:''});savePlans(); 
+    showToast(`📅 → "${dayLabel(day)}" (сохранено)`);closeManageMenu() 
+}
+function planLookFromGallery(realIdx,day){ 
+    const look=savedLooks[realIdx];if(!look)return; 
+    const names = extractNames(look.items); 
+    const s=JSON.stringify([...names].sort()); 
+    if(plans[day].some(p=>JSON.stringify(p.items.sort())===s)){showToast('ℹ️ Уже в плане');return} 
+    plans[day].push({items:[...names],occasion:look.occasion||'',season:look.season||''});savePlans(); 
+    showToast(` "${look.name}" → "${dayLabel(day)}"`); 
+    document.querySelectorAll('.look-wear-menu').forEach(m=>m.classList.remove('open')) 
+}
+function toggleLookWearMenu(btn){ 
+    const menu=btn.nextElementSibling; 
+    document.querySelectorAll('.look-wear-menu').forEach(m=>{if(m!==menu)m.classList.remove('open')}); 
+    menu.classList.toggle('open') 
+}
+function clearAllPlans() {
+    const total = plans.tomorrow.length + plans.dayafter.length + plans.day3.length;
+    if (!total) { showToast('ℹ️ Планы пусты'); return; }
+    
+    // Настраиваем универсальное окно под все планы
+    document.getElementById('universalConfirmTitle').textContent = '🗑️ Очистить планы?';
+    document.getElementById('universalConfirmText').textContent = `Очистить ВСЕ планы? (${total} записей)`;
+    document.getElementById('universalConfirmAction').value = 'clearAllPlans';
+    document.getElementById('universalConfirmOverlay').classList.add('open');
+}
+function copyCurrentLookId(idx) {
+    const look = savedLooks[idx];
+    if (!look || !look.uniqueId) return;
+    
+    // Копируем ID в буфер обмена
+    safeCopy(look.uniqueId);
+    
+    // Показываем всплывающее окно с ID
+    document.getElementById('copyIdText').textContent = look.uniqueId;
+    document.getElementById('copyIdOverlay').classList.add('open');
+    
+    // Закрываем меню управления
+    document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
+}
+
+// Функция закрытия окна с ID
+function closeCopyIdOverlay() {
+    document.getElementById('copyIdOverlay').classList.remove('open');
+}
+async function sendLookToDb(idx){ 
+    const look = savedLooks[idx]; 
+    const names = extractNames(look.items); 
+    const hash = look.uniqueId || await generateLookHash(names); 
+    if (window.Telegram && window.Telegram.WebApp) { 
+        window.Telegram.WebApp.sendData(JSON.stringify({ action: 'save_look', name: look.name, items: names, hash: hash })); 
+        showToast('✅ Данные отправлены боту невидимо!'); 
+    } else { 
+        const cmd = `/save_look ${look.name} ${names.join(',')}`; 
+        await safeCopy(cmd); 
+        showToast('📋 Команда скопирована! Вставь в чат с ботом.'); 
+    } 
+    document.querySelectorAll('.looks-actions-menu-inline').forEach(m=>m.classList.remove('open')); 
+}
+async function exportLooksToTable() { 
+    if(savedLooks.length === 0) { showToast('⚠️ Нет образов для экспорта'); return; } 
+    let csvContent = "Look_ID,Name,Items_JSON,Source\n"; 
+    for (const look of savedLooks) { 
+        let hash = look.uniqueId || await generateLookHash(look.items); 
+        const name = `"${(look.name || '').replace(/"/g, '""')}"`; 
+        const itemsJson = `"${JSON.stringify(extractNames(look.items)).replace(/"/g, '""')}"`; 
+        const source = look.source || 'local'; 
+        csvContent += `${hash},${name},${itemsJson},${source}\n`; 
+    } 
+    await safeCopy(csvContent); 
+    showToast(`📋 Скопировано ${savedLooks.length} образов! Вставь в Google Таблицу.`); 
+    document.querySelectorAll('.looks-actions-menu-inline').forEach(m=>m.classList.remove('open')); 
+}
+function addToLook2(){ 
+    if(looksSlideIndex < 0 || looksSlideIndex >= savedLooks.length) { showToast('⚠️ Нет выбранного образа'); return; } 
+    const look = savedLooks[looksSlideIndex]; 
+    const names = extractNames(look.items); 
+    let added = 0; 
+    names.forEach(name => { 
+        if(!lookItems.find(i => i.name === name)){ 
+            const d=data.find(x=>x.name===name); 
+            lookItems.push({name:name,image:d?.image||'',tempFav:d?.tags.includes('LIKE_FAV'),tempStatus:d?.status||'ST_OK'}); 
+            added++; 
+        } 
+    }); 
+    if(added > 0){ 
+        saveLook(); renderLookList(); updateManageBar(); 
+        showToast(` Добавлено ${added} вещ. в Конструктор`); 
+        document.getElementById('lookSidebar').classList.add('open'); 
+    } else { showToast('️ Все вещи уже в Конструкторе'); } 
+    document.querySelectorAll('.looks-actions-menu-inline').forEach(m=>m.classList.remove('open')); 
+}
+
+async function openSaveDialog(){ 
+    if(!lookItems.length){showToast('❌ Лук пуст');return} 
+    const smartName = generateSmartName(lookItems); 
+    const uniqueId = await generateLookHash(lookItems); 
+    const ns=document.getElementById('saveDialogName');ns.innerHTML = `<option value="${smartName}">${smartName}</option>`; 
+    document.getElementById('saveDialogHash').value = uniqueId; 
+    const os=document.getElementById('saveDialogOccasion');os.innerHTML='<option value="">— Не указано —</option>'; 
+    occasionsLookList.forEach(o=>{os.innerHTML+=`<option value="${o.id}">${o.name}</option>`}); 
+    const ss=document.getElementById('saveDialogSeason');ss.innerHTML='<option value="">— Не указан —</option>'; 
+    seasonsLookList.forEach(s=>{ss.innerHTML+=`<option value="${s.id}">${s.name}</option>`}); 
+    ['saveDialogFav','saveDialogOften','saveDialogPlanTomorrow','saveDialogPlanDayAfter','saveDialogPlanDay3'].forEach(id=>document.getElementById(id).checked=false); 
+    document.getElementById('saveDialogOverlay').classList.add('open') 
+}
+function closeSaveDialog(){document.getElementById('saveDialogOverlay').classList.remove('open')}
+// === ГЛАВНАЯ ФУНКЦИЯ СОХРАНЕНИЯ ОБРАЗА ===
+async function confirmSaveLook(isDuplicateAllowed = false) {
+    const name = document.getElementById('saveDialogName').value;
+    const uniqueId = document.getElementById('saveDialogHash').value;
+    const fav = document.getElementById('saveDialogFav').checked;
+    const often = document.getElementById('saveDialogOften').checked;
+    
+    // Проверяем дубликат только если НЕ разрешено сохранять копию
+    if (!isDuplicateAllowed) {
+        const dup = findDuplicateLook(lookItems);
+        if (dup) {
+            window._pendingDuplicateName = dup.name;
+            document.getElementById('duplicateLookText').textContent = 
+                `Образ "${dup.name}" уже существует. Вы уверены, что хотите сохранить копию?`;
+            document.getElementById('duplicateLookOverlay').classList.add('open');
+            return; // Прерываем выполнение, ждем ответа пользователя
+        }
+    }
+
+    // === ЛОГИКА СОХРАНЕНИЯ (выполняется всегда, если дошли сюда) ===
+    const newTags = [];
+    if(fav) newTags.push('OLIKE_FAV');
+    if(often) newTags.push('OLIKE_OFTEN');
+    
+    // Собираем множественные значения из чекбоксов (если они есть в HTML)
+    const selectedOccasions = Array.from(document.querySelectorAll('#saveOccasionGroup input:checked')).map(cb => cb.value);
+    const selectedSeasons = Array.from(document.querySelectorAll('#saveSeasonGroup input:checked')).map(cb => cb.value);
+    const selectedLikes = Array.from(document.querySelectorAll('.like-btn input:checked')).map(cb => cb.value);
+    
+    newTags.push(...selectedOccasions);
+    newTags.push(...selectedSeasons);
+    newTags.push(...selectedLikes);
+
+    savedLooks.push({
+        name, items:[...lookItems], 
+        occasion: selectedOccasions.join(','), 
+        season: selectedSeasons.join(','),
+        fav, often,
+        date:new Date().toLocaleDateString(), source: 'local', uniqueId, tags: newTags
+    });
+    
+    const names = getCurrentLookNames();
+    const s = JSON.stringify([...names].sort());
+    
+    if(document.getElementById('saveDialogPlanTomorrow').checked && !plans.tomorrow.some(p => JSON.stringify(p.items.sort()) === s))
+        plans.tomorrow.push({items:[...names], occasion:selectedOccasions.join(','), season:selectedSeasons.join(',')});
+    if(document.getElementById('saveDialogPlanDayAfter').checked && !plans.dayafter.some(p => JSON.stringify(p.items.sort()) === s))
+        plans.dayafter.push({items:[...names], occasion:selectedOccasions.join(','), season:selectedSeasons.join(',')});
+    if(document.getElementById('saveDialogPlanDay3').checked && !plans.day3.some(p => JSON.stringify(p.items.sort()) === s))
+        plans.day3.push({items:[...names], occasion:selectedOccasions.join(','), season:selectedSeasons.join(',')});
+        
+    savePlans();
+    try { localStorage.setItem('saved_looks', JSON.stringify(savedLooks)); } catch(e) {}
+    closeSaveDialog();
+    showToast(`💾 "${name}" сохранён`);
+    renderLooksFullscreen();
+} // <--- ВОТ ЭТОЙ СКОБКИ НЕ ХВАТАЛО! Она закрывает confirmSaveLook
+
+// === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ОКНА ДУБЛИКАТА (ТОЛЬКО ОДИН РАЗ!) ===
+function closeDuplicateLookOverlay() {
+    document.getElementById('duplicateLookOverlay').classList.remove('open');
+    closeSaveDialog(); 
+}
+
+function confirmDuplicateLook() {
+    document.getElementById('duplicateLookOverlay').classList.remove('open');
+    confirmSaveLook(true);
+}
+
+// === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ОКНА ДУБЛИКАТА (ТОЛЬКО ОДИН РАЗ!) ===
+
+function closeDuplicateLookOverlay() {
+    document.getElementById('duplicateLookOverlay').classList.remove('open');
+    closeSaveDialog(); // Также закрываем диалог сохранения
+}
+
+function confirmDuplicateLook() {
+    document.getElementById('duplicateLookOverlay').classList.remove('open');
+    // Вызываем сохранение с флагом "дубликат разрешен"
+    confirmSaveLook(true); 
+}
+
+function openPlanWindow(){ 
+    document.getElementById('filterSidebar').classList.remove('open');document.getElementById('lookSidebar').classList.remove('open'); 
+    document.getElementById('galleryOverlay').classList.remove('open');currentPlanDay='tomorrow'; 
+    document.querySelectorAll('.plan-subtab').forEach(t=>t.classList.remove('active')); 
+    document.querySelectorAll('.plan-subtab')[0].classList.add('active');planSlideIndex=0; 
+    document.getElementById('planOverlay').classList.add('open');document.body.style.overflow='hidden';renderPlanFullscreen() 
+}
+function closePlanWindow(){document.getElementById('planOverlay').classList.remove('open');document.body.style.overflow=''}
+function closePlanAndOpenGallery(){closePlanWindow();openGallery()}
+function switchPlanSubtab(day){ 
+    currentPlanDay=day;document.querySelectorAll('.plan-subtab').forEach(t=>t.classList.remove('active')); 
+    document.querySelectorAll('.plan-subtab')[['tomorrow','dayafter','day3'].indexOf(day)].classList.add('active'); 
+    planSlideIndex=0;renderPlanFullscreen() 
+}
+function getDedupedPlanItems(day){ 
+    const items=plans[day]||[];const seen=new Set();const result=[]; 
+    items.forEach(plan=>{const uniqueItems=plan.items.filter(name=>{if(seen.has(name))return false;seen.add(name);return true});if(uniqueItems.length>0)result.push({...plan,items:uniqueItems,originalItems:plan.items})}); 
+    return result 
+}
+function renderPlanFullscreen(){ 
+    const c=document.getElementById('planFullscreen'),counter=document.getElementById('planCounter'); 
+    const deduped=getDedupedPlanItems(currentPlanDay); 
+    if(!deduped.length){c.innerHTML='<div class="fullscreen-empty">Ничего не запланировано</div>';counter.textContent='';return} 
+    if(planSlideIndex>=deduped.length)planSlideIndex=deduped.length-1;if(planSlideIndex<0)planSlideIndex=0; 
+    const plan=deduped[planSlideIndex];let gh=''; 
+    plan.items.forEach(name=>{const d=data.find(x=>x.name===name);const img=d?d.image:'';gh+=`<div class="plan-item" style="position:relative"><button class="plan-item-remove" onclick="removeItemFromPlan('${currentPlanDay}',${planSlideIndex},'${name.replace(/'/g,"\\'")}')" title="Удалить вещь">✕</button><img src="${img}" loading="lazy"></div>`}); 
+    c.innerHTML=`<div class="plan-grid${plan.items.length===1?' single-item':''}">${gh}</div>`; 
+    counter.textContent=`${planSlideIndex+1} / ${deduped.length}` 
+}
+function navPlan(d){const deduped=getDedupedPlanItems(currentPlanDay);planSlideIndex+=d;if(planSlideIndex<0)planSlideIndex=deduped.length-1;if(planSlideIndex>=deduped.length)planSlideIndex=0;renderPlanFullscreen()}
+function removeItemFromPlan(day,slideIdx,itemName){ 
+    const deduped=getDedupedPlanItems(day);if(slideIdx>=deduped.length)return; 
+    const plan=deduped[slideIdx]; 
+    const origIdx=plans[day].indexOf(plans[day].find(p=>JSON.stringify(p.items)===JSON.stringify(plan.originalItems))); 
+    if(origIdx<0)return; 
+    if(plan.originalItems.length<=1){plans[day].splice(origIdx,1);showToast('🗑️ Образ удалён')} 
+    else{plans[day][origIdx].items=plans[day][origIdx].items.filter(n=>n!==itemName);showToast(`🗑️ "${itemName}" убрана`)} 
+    savePlans();if(planSlideIndex>=getDedupedPlanItems(day).length)planSlideIndex=Math.max(0,getDedupedPlanItems(day).length-1);renderPlanFullscreen() 
+}
+function clearPlanDay() {
+    const items = plans[currentPlanDay];
+    if (!items || !items.length) { showToast('ℹ️ Уже пусто'); return; }
+    
+    // Настраиваем универсальное окно под текущий день
+    document.getElementById('universalConfirmTitle').textContent = '🗑️ Очистить день?';
+    document.getElementById('universalConfirmText').textContent = `Очистить этот день? (${items.length} записей)`;
+    document.getElementById('universalConfirmAction').value = 'clearPlanDay';
+    document.getElementById('universalConfirmOverlay').classList.add('open');
+}
+function togglePlanManage(){document.getElementById('planManageMenu').classList.toggle('open')}
+async function copyPlanDayNames(){ 
+    const deduped=getDedupedPlanItems(currentPlanDay);if(!deduped.length){showToast('ℹ️ Пусто');return} 
+    const allNames=[];deduped.forEach(p=>p.items.forEach(n=>{if(!allNames.includes(n))allNames.push(n)})); 
+    await safeCopy(allNames.join(','));showToast(` Скопировано ${allNames.length}`);document.getElementById('planManageMenu').classList.remove('open') 
+}
+document.addEventListener('keydown',e=>{ 
+    if(document.getElementById('itemModalOverlay').classList.contains('open')){ 
+        if(e.key==='ArrowLeft')navigateModal(-1); 
+        if(e.key==='ArrowRight')navigateModal(1); 
+        if(e.key==='Escape')closeItemModal() 
+    } 
+    if(document.getElementById('galleryOverlay').classList.contains('open')&&e.key==='Escape')closeGallery(); 
+    if(document.getElementById('planOverlay').classList.contains('open')&&e.key==='Escape')closePlanWindow(); 
+    if(document.getElementById('filterSidebar').classList.contains('open')&&e.key==='Escape')toggleFilterSidebar(); 
+    if(document.getElementById('lookSidebar').classList.contains('open')){ 
+        if(e.key==='ArrowUp'){e.preventDefault();moveSelectedItemUp()} 
+        if(e.key==='ArrowDown'){e.preventDefault();moveSelectedItemDown()} 
+        if(e.key==='Escape')closeLookBuilder() 
+    } 
+});
+async function safeCopy(t){try{const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}catch(e){await navigator.clipboard.writeText(t)}}
+async function copySelected(){await safeCopy(Array.from(selectedNames).join('\n'));showToast(`📋 ${selectedNames.size}`)}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
+
+// === ЗАПУСК ПРИЛОЖЕНИЯ ===
+//initFilters(); убрала закомментировала косой чертой
+initAppWithCache();
+filteredItemsCache=data;
+renderLookList();// === НОВЫЕ ФУНКЦИИ ДЛЯ КНОПОК "НАПРЯМУЮ" ===
+
+// 1. Функция для кнопки "В базу (напрямую)"
+// 1. В базу (напрямую) - ИСПРАВЛЕННАЯ
+async function addLookToDatabaseDirect(idx) {
+    const look = savedLooks[idx];
+    if (!look) { showToast('⚠️ Образ не найден'); return; }
+    
+    showToast('⏳ Сохраняю в таблицу...');
+    
+    try {
+        // Вызываем серверную функцию
+        google.script.run
+            .withSuccessHandler(function(response) {
+                if (response.error) {
+                    showToast('❌ Ошибка: ' + response.error);
+                } else {
+                    if (response.alreadyExists) {
+                        showToast('ℹ️ Такой образ уже есть в таблице');
+                    } else {
+                        showToast('✅ Образ сохранен в таблицу!');
+                    }
+                }
+                // Закрываем меню в любом случае
+                document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
+            })
+            .withFailureHandler(function(err) {
+                console.error("Ошибка GAS:", err);
+                showToast('❌ Ошибка соединения с сервером');
+                document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
+            })
+            .addLookToDatabase({
+                uniqueId: look.uniqueId,
+                name: look.name,
+                items: look.items, // Отправляем как есть, сервер сам очистит
+                tags: look.tags || [],
+                source: 'local_direct'
+            });
+
+    } catch (e) {
+        console.error(e);
+        showToast('❌ Неожиданная ошибка');
+    }
+}
+
+// 2. Функция для кнопки "Удалить из базы (напрямую)"
+// 2. Удалить из базы (напрямую) - ПРОВЕРЬ ЭТУ ЧАСТЬ
+function removeLookFromDatabaseDirect(idx) {
+    const look = savedLooks[idx];
+    if (!look) { showToast('️ Образ не найден'); return; }
+    
+    // Настраиваем универсальное окно под удаление из таблицы
+    document.getElementById('universalConfirmTitle').textContent = '⚠️ Удалить из базы данных?';
+    document.getElementById('universalConfirmText').textContent = `Вы уверены, что хотите удалить образ "${look.name}" ИЗ БАЗЫ ДАННЫХ? Это действие нельзя отменить.`;
+    document.getElementById('universalConfirmAction').value = 'deleteDbLook';
+    document.getElementById('universalConfirmIdx').value = idx;
+    
+    document.getElementById('universalConfirmOverlay').classList.add('open');
+}
+
+// 3. Функция для кнопок "В избранное" и "Убрать из избранного"
+// 3. В избранное / Убрать из избранного (напрямую) - ИСПРАВЛЕННАЯ
+async function setLookFavoriteDirect(idx, isFavorite) {
+    const look = savedLooks[idx];
+    if (!look) { showToast('⚠️ Образ не найден'); return; }
+    if (!look.uniqueId) { showToast('⚠️ У этого образа нет ID для таблицы'); return; }
+
+    showToast(isFavorite ? '⭐ Добавляю в избранное...' : '❌ Убираю из избранного...');
+
+    google.script.run
+        .withSuccessHandler(function(response) {
+            if (response.error) {
+                showToast('❌ Ошибка таблицы: ' + response.error);
+            } else {
+                // 1. Обновляем ЛОКАЛЬНУЮ память (чтобы галочка изменилась на экране)
+                if (isFavorite) {
+                    if (!look.tags) look.tags = [];
+                    if (!look.tags.includes('OLIKE_FAV')) {
+                        look.tags.push('OLIKE_FAV');
+                    }
+                } else {
+                    if (look.tags) {
+                        look.tags = look.tags.filter(t => t !== 'OLIKE_FAV');
+                    }
+                }
+                
+                // Сохраняем обновленный список образов в память браузера
+                localStorage.setItem('saved_looks', JSON.stringify(savedLooks));
+
+                // 2. Обновляем интерфейс (перерисовываем список)
+                renderLooksFullscreen();
+                
+                showToast(response.message || (isFavorite ? '✅ В избранном' : '✅ Не в избранном'));
+            }
+            // Закрываем меню в любом случае
+            document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
+        })
+        .withFailureHandler(function(err) {
+            console.error("Ошибка GAS:", err);
+            showToast('❌ Ошибка соединения с сервером');
+            document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
+        })
+        .updateLookFavoriteInTable(look.uniqueId, isFavorite);
+}// === ЛОГИКА РЕДАКТИРОВАНИЯ ТЕГОВ ОБРАЗА ===
+let currentLookIdx = -1;
+
+function openEditTagsModal(idx) {
+    currentLookIdx = idx;
+    const look = savedLooks[idx];
+    if (!look) return;
+
+    const container = document.getElementById('editTagsContent');
+    container.innerHTML = '';
+    
+    // ДОБАВИЛИ OLIKE_FAV В СПИСОК МЕТОК
+    const groups = [
+        { title: 'Сезон', items: seasonsLookList },
+        { title: 'Назначение', items: occasionsLookList },
+        { title: 'Лайки / Метки', items: [...likesList, {id:'OLIKE_FAV', name:'⭐ Избранное'}, {id:'OLIKE_OFTEN', name:' Часто ношу'}] }
+    ];
+
+    groups.forEach(group => {
+        if (!group.items || group.items.length === 0) return;
+        
+        const section = document.createElement('div');
+        section.className = 'edit-tags-section';
+        section.innerHTML = `<div class="edit-tags-title">${group.title}</div><div class="edit-tags-grid"></div>`;
+        
+        const grid = section.querySelector('.edit-tags-grid');
+        
+        group.items.forEach(item => {
+            const isLiked = item.id === 'OLIKE_YES';
+            const isDisliked = item.id === 'ODISLIKE_NO';
+            const isChecked = look.tags && look.tags.includes(item.id);
+            
+            const label = document.createElement('label');
+            label.className = 'edit-tag-checkbox' + (isChecked ? ' checked' : '');
+            label.dataset.id = item.id;
+            
+            label.onclick = () => {
+                const input = label.querySelector('input');
+                
+                // Логика взаимоисключения для Нравится/Не нравится
+                if (isLiked || isDisliked) {
+                    if (isLiked && !input.checked) {
+                        const disLabel = grid.querySelector(`[data-id="ODISLIKE_NO"]`);
+                        if(disLabel) { disLabel.classList.remove('checked'); disLabel.querySelector('input').checked = false; }
+                    }
+                    if (isDisliked && !input.checked) {
+                        const likeLabel = grid.querySelector(`[data-id="OLIKE_YES"]`);
+                        if(likeLabel) { likeLabel.classList.remove('checked'); likeLabel.querySelector('input').checked = false; }
+                    }
+                }
+                
+                input.checked = !input.checked;
+                label.classList.toggle('checked', input.checked);
+            };
+
+            label.innerHTML = `
+                <input type="checkbox" value="${item.id}" ${isChecked ? 'checked' : ''}>
+                <span class="check-icon">✓</span>
+                <span>${item.name}</span>
+            `;
+            grid.appendChild(label);
+        });
+        
+        container.appendChild(section);
+    });
+
+    document.getElementById('editTagsOverlay').classList.add('open');
+}
+
+function closeEditTagsModal() {
+    document.getElementById('editTagsOverlay').classList.remove('open');
+    currentLookIdx = -1;
+}
+
+async function saveEditedTags() {
+    if (currentLookIdx === -1) return;
+    
+    const checkboxes = document.querySelectorAll('#editTagsContent input:checked');
+    const newTags = Array.from(checkboxes).map(cb => cb.value);
+    
+    const look = savedLooks[currentLookIdx];
+    showToast('⏳ Сохраняю образ и теги...');
+    
+    // ШАГ 1: Сначала сохраняем/обновляем образ в Saved_Looks
+    google.script.run
+        .withSuccessHandler(function(saveRes) {
+            if (saveRes.error) {
+                showToast('❌ Ошибка сохранения образа: ' + saveRes.error);
+                return;
+            }
+            
+            // ШАГ 2: Если образ сохранился успешно, обновляем теги
+            google.script.run
+                .withSuccessHandler(function(tagRes) {
+                    if (tagRes.error) {
+                        showToast('❌ Образ сохранен, но ошибка тегов: ' + tagRes.error);
+                    } else {
+                        // Обновляем локальные данные
+                        look.tags = newTags;
+                        localStorage.setItem('saved_looks', JSON.stringify(savedLooks));
+                        renderLooksFullscreen();
+                        closeEditTagsModal();
+                        showToast('✅ Образ и теги обновлены!');
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    showToast('❌ Образ сохранен, но ошибка тегов');
+                    console.error(err);
+                })
+                .updateLookTagsDirect(look.uniqueId, newTags);
+                
+        })
+        .withFailureHandler(function(err) {
+            showToast('❌ Ошибка сохранения образа');
+            console.error(err);
+        })
+        .addLookToDatabase({
+            uniqueId: look.uniqueId,
+            name: look.name,
+            items: look.items,
+            tags: newTags, // Передаем уже новые теги сразу
+            source: 'local_direct'
+        });
+}// === ЛОГИКА РЕДАКТИРОВАНИЯ ВЕЩИ ===// === ЛОГИКА РЕДАКТИРОВАНИЯ ВЕЩИ ===
+
+
+function openEditItemModal() {
+    if (currentModalIndex === -1 || !filteredItemsCache[currentModalIndex]) return;
+    
+    const item = filteredItemsCache[currentModalIndex];
+    currentEditItemName = item.name;
+    
+    // Инициализируем состояние текущими данными
+    editItemState = {
+        status: item.status || '',
+        place: item.place || '',
+        category: item.category || '', // НОВОЕ
+        type: item.type || '',         // НОВОЕ
+        color: item.color || '',       // НОВОЕ
+        tags: [...(item.tags || [])]
+    };
+    
+    renderEditItemForm();
+    document.getElementById('editItemOverlay').classList.add('open');
+}
+
+function closeEditItemModal() {
+    document.getElementById('editItemOverlay').classList.remove('open');
+    currentEditItemName = null;
+}
+
+function renderEditItemForm() {
+    const container = document.getElementById('editItemContent');
+    container.innerHTML = '';
+    
+    // 1. Метки (чекбоксы)
+const marksSection = createCheckboxSection('Метки', [
+    {id:'LIKE_FAV', name:'⭐ Избранное'},
+    {id:'LIKE_OFTEN', name:' Часто ношу'},
+    {id:'NOT_WEAR', name:' Не ношу'} // <--- ДОБАВЛЕНО
+], editItemState.tags);
+container.appendChild(marksSection);
+    
+    // 2. Лайки (взаимоисключающие чекбоксы)
+    const likesSection = createCheckboxSection('Лайки', [
+        {id:'LIKE_YES', name:'Нравится'},
+        {id:'DISLIKE_NO', name:'Не нравится'}
+    ], editItemState.tags, true);
+    container.appendChild(likesSection);
+    
+    // 3. Назначение (чекбоксы)
+    const occSection = createCheckboxSection('Назначение', occasionsItemList, editItemState.tags);
+    container.appendChild(occSection);
+    
+    // 4. Сезон (чекбоксы)
+    const seaSection = createCheckboxSection('Сезон', seasonsItemList, editItemState.tags);
+    container.appendChild(seaSection);
+    
+    // 5. Статус (радио-кнопки, обязательно)
+    const statusSection = createRadioSection('Статус *', Object.entries(statusNames).map(([id,name])=>({id,name})), editItemState.status, 'status');
+    container.appendChild(statusSection);
+    
+    // 6. Место (радио-кнопки, обязательно)
+    const placeSection = createRadioSection('Место *', Object.entries(placeNames).map(([id,name])=>({id,name})), editItemState.place, 'place');
+    container.appendChild(placeSection);
+    // === НОВЫЕ ОБЯЗАТЕЛЬНЫЕ ПОЛЯ ===
+    const catSection = createRadioSection('Категория *', Object.entries(catNames).map(([id,name])=>({id,name})), editItemState.category, 'category');
+    container.appendChild(catSection);
+
+    const typeSection = createRadioSection('Тип *', Object.entries(typeNames).map(([id,name])=>({id,name})), editItemState.type, 'type');
+    container.appendChild(typeSection);
+
+    const colorSection = createRadioSection('Цвет *', Object.entries(colorNames).map(([id,name])=>({id,name})), editItemState.color, 'color');
+    container.appendChild(colorSection);
+    // ==============================
+
+    // === СЕКЦИЯ КОММЕНТАРИЯ ===
+    const commentSection = document.createElement('div');
+    commentSection.className = 'edit-item-section edit-comment-section';
+    
+    // Извлекаем текущий комментарий
+    const currentNoteTag = editItemState.tags.find(t => t.startsWith('NOTE_')) || '';
+    const noteText = currentNoteTag ? currentNoteTag.substring(5) : '';
+    
+    commentSection.innerHTML = `
+        <div class="edit-item-title">💬 Комментарий (необязательно)</div>
+        <textarea id="itemCommentInput" class="edit-comment-input" maxlength="200" placeholder="Напишите заметку о вещи...">${noteText}</textarea>
+        <div style="font-size:10px; color:#999; margin-top:4px; text-align:right;">Макс. 200 символов</div>
+    `;
+    container.appendChild(commentSection);
+    // ============================
+    
+    validateEditItemForm();
+}
+
+
+
+
+
+
+
+
+// === УНИВЕРСАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ===
+
+// Закрыть окно
+function closeUniversalConfirm() {
+    document.getElementById('universalConfirmOverlay').classList.remove('open');
+}
+
+// Выполнить действие при нажатии "Подтвердить"
+function executeUniversalAction() {
+    const action = document.getElementById('universalConfirmAction').value;
+    const idx = parseInt(document.getElementById('universalConfirmIdx').value);
+    
+    // 1. Очистка конструктора
+    if (action === 'clearLook') {
+        lookItems = []; selectedLookIndex = -1; saveLook(); renderLookList(); updateManageBar();
+        showToast('🗑️ Конструктор очищен');
+    }
+    // 2. Очистка всех планов
+    else if (action === 'clearAllPlans') {
+        plans = { tomorrow: [], dayafter: [], day3: [] }; savePlans(); planSlideIndex = 0; renderPlanFullscreen();
+        showToast('🗑️ Все планы очищены');
+    }
+    // 3. Очистка дня
+    else if (action === 'clearPlanDay') {
+        plans[currentPlanDay] = []; savePlans(); planSlideIndex = 0; renderPlanFullscreen();
+        showToast('🗑️ День очищен');
+        document.getElementById('planManageMenu').classList.remove('open');
+    }
+    // 4. Удаление локального образа (НОВОЕ!)
+    else if (action === 'deleteLocalLook') {
+        const look = savedLooks[idx];
+        savedLooks.splice(idx, 1);
+        try { localStorage.setItem('saved_looks', JSON.stringify(savedLooks)); } catch(e) {}
+        
+        if (looksSlideIndex >= getFilteredLooks().length) {
+            looksSlideIndex = Math.max(0, getFilteredLooks().length - 1);
+        }
+        renderLooksFullscreen();
+        showToast(`️ "${look.name}" удалён`);
+    }
+    // 5. Удаление из базы данных (НОВОЕ!)
+    else if (action === 'deleteDbLook') {
+        const look = savedLooks[idx];
+        showToast('🗑️ Удаляю из таблицы...');
+        
+        google.script.run
+            .withSuccessHandler(function(response) {
+                if (response.error) {
+                    showToast('❌ Ошибка: ' + response.error);
+                } else {
+                    showToast('✅ Образ удален из таблицы!');
+                    // Удаляем и локально тоже, чтобы не висел "призрак"
+                    savedLooks.splice(idx, 1);
+                    localStorage.setItem('saved_looks', JSON.stringify(savedLooks));
+                    renderLooksFullscreen();
+                }
+                closeUniversalConfirm();
+            })
+            .withFailureHandler(function(err) {
+                showToast('❌ Ошибка соединения');
+                closeUniversalConfirm();
+            })
+            .removeLookFromDatabase(look.uniqueId);
+            
+        // Не закрываем окно сразу, ждем ответа сервера
+        return; 
+    }
+    // 6. Копирование команды удаления для Бота (НОВОЕ!)
+    else if (action === 'copyBotDeleteCmd') {
+        const look = savedLooks[idx];
+        const cmd = `/delete_look ${look.uniqueId}`;
+        
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.sendData(JSON.stringify({ action: 'delete_look', id: look.uniqueId }));
+            showToast('✅ Команда удаления отправлена боту!');
+        } else {
+            safeCopy(cmd).then(() => {
+                showToast('📋 Команда скопирована! Вставь в чат с ботом.');
+            });
+        }
+        document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
+    }
+    
+    closeUniversalConfirm();
+}
+
+
+
+
+function createCheckboxSection(title, items, currentTags, isExclusive=false) {
+    const section = document.createElement('div');
+    section.className = 'edit-item-section';
+    section.innerHTML = `<div class="edit-item-title">${title}</div><div class="edit-item-grid"></div>`;
+    const grid = section.querySelector('.edit-item-grid');
+    
+    items.forEach(item => {
+        const isChecked = currentTags.includes(item.id);
+        const label = document.createElement('label');
+        label.className = 'edit-tag-checkbox' + (isChecked ? ' checked' : '');
+        
+        label.onclick = () => {
+            const input = label.querySelector('input');
+            
+            if (isExclusive) {
+                // Логика взаимоисключения
+                if (item.id === 'LIKE_YES' && !input.checked) {
+                    const disLabel = grid.querySelector('[data-id="DISLIKE_NO"]');
+                    if(disLabel) { disLabel.classList.remove('checked'); disLabel.querySelector('input').checked = false; }
+                }
+                if (item.id === 'DISLIKE_NO' && !input.checked) {
+                    const likeLabel = grid.querySelector('[data-id="LIKE_YES"]');
+                    if(likeLabel) { likeLabel.classList.remove('checked'); likeLabel.querySelector('input').checked = false; }
+                }
+            }
+            
+            input.checked = !input.checked;
+            label.classList.toggle('checked', input.checked);
+            
+            // Обновляем состояние тегов
+            if (input.checked) {
+                if (!editItemState.tags.includes(item.id)) editItemState.tags.push(item.id);
+            } else {
+                editItemState.tags = editItemState.tags.filter(t => t !== item.id);
+            }
+        };
+        
+        label.dataset.id = item.id;
+        label.innerHTML = `
+            <input type="checkbox" value="${item.id}" ${isChecked ? 'checked' : ''}>
+            <span class="check-icon">✓</span>
+            <span>${item.name}</span>
+        `;
+        grid.appendChild(label);
+    });
+    
+    return section;
+}
+
+function createRadioSection(title, options, currentValue, stateKey) {
+    const section = document.createElement('div');
+    section.className = 'edit-item-section';
+    section.innerHTML = `<div class="edit-item-title">${title}</div><div class="edit-item-grid"></div>`;
+    const grid = section.querySelector('.edit-item-grid');
+    
+    options.forEach(opt => {
+        const isSelected = currentValue === opt.id;
+        const label = document.createElement('label');
+        label.className = 'edit-item-radio' + (isSelected ? ' selected' : '');
+        
+        label.onclick = () => {
+            // Снимаем выделение со всех радио в этой группе
+            grid.querySelectorAll('.edit-item-radio').forEach(r => r.classList.remove('selected'));
+            label.classList.add('selected');
+            label.querySelector('input').checked = true;
+            
+            // Обновляем состояние
+            editItemState[stateKey] = opt.id;
+            validateEditItemForm();
+        };
+        
+        label.innerHTML = `
+            <input type="radio" name="${stateKey}" value="${opt.id}" ${isSelected ? 'checked' : ''}>
+            <span class="radio-icon"></span>
+            <span>${opt.name}</span>
+        `;
+        grid.appendChild(label);
+    });
+    
+    return section;
+}
+
+function validateEditItemForm() {
+    const btn = document.getElementById('editItemSaveBtn');
+    const isValid = editItemState.status && editItemState.place && editItemState.category && editItemState.type && editItemState.color; // ✅ Новое
+    btn.disabled = !isValid;
+}
+
+function closeEditItemModal() {
+    document.getElementById('editItemOverlay').classList.remove('open');
+    currentEditItemName = null;
+}
+
+async function saveEditedItem() {
+    if (!currentEditItemName) return;
+    if (!editItemState.status || !editItemState.place) {
+        showToast('️ Выберите статус и место!');
+        return;
+    }
+    
+    const saveBtn = document.getElementById('editItemSaveBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Сохраняю...';
+    
+    try {
+        // === ОБРАБОТКА КОММЕНТАРИЯ ПЕРЕД СОХРАНЕНИЕМ ===
+        const commentInput = document.getElementById('itemCommentInput');
+        const commentText = commentInput ? commentInput.value.trim() : '';
+        
+        // Удаляем старый комментарий из массива тегов
+        editItemState.tags = editItemState.tags.filter(t => !t.startsWith('NOTE_'));
+        
+        // Добавляем новый, если поле не пустое
+        if (commentText) {
+            editItemState.tags.push('NOTE_' + commentText);
+        }
+        // ==============================================
+
+        const res = await new Promise((resolve, reject) => {
+            google.script.run
+                .withSuccessHandler(resolve)
+                .withFailureHandler(reject)
+                .updateItemDetailsDirect(
+                    currentEditItemName, 
+                    editItemState.status, 
+                    editItemState.place,
+                    editItemState.category, // ✅ НОВОЕ
+                    editItemState.type,     // ✅ НОВОЕ
+                    editItemState.color,    // ✅ НОВОЕ 
+                    editItemState.tags // Сюда передается обновленный массив с NOTE_
+                );
+        });
+
+        if (res.error) {
+            showToast('❌ ' + res.error);
+        } else {
+            // Обновляем локальные данные вещи
+            const item = data.find(i => i.name === currentEditItemName);
+            if (item) {
+                item.status = res.status;
+                item.place = res.place;
+                item.category = res.category; // ✅ НОВОЕ
+                item.type = res.type;         // ✅ НОВОЕ
+                item.color = res.color;       // ✅ НОВОЕ
+                item.tags = res.tags;
+            }
+            
+            // Очищаем кэш для корректного отображения при следующем открытии
+            wardrobeCache.clear();
+            
+            // Перерисовываем интерфейс
+            applyFilters(); 
+            showCurrentModalItem(); 
+            
+            showToast('✅ Вещь обновлена!');
+        }
+    } catch (err) {
+        console.error("Ошибка сохранения:", err);
+        showToast(' Ошибка соединения с таблицей');
+    } finally {
+        closeEditItemModal();
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Сохранить';
+    }
+}
+// === ПОИСК ОБРАЗОВ ПО СОСТАВУ ===
+let lookItemSearchQuery = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('lookItemSearchInput');
+    if (input) {
+        input.addEventListener('input', (e) => {
+            lookItemSearchQuery = e.target.value.toLowerCase().trim();
+            looksSlideIndex = 0; // Сброс на первый образ при поиске
+            renderLooksFullscreen();
+        });
+    }
+});
+
+// Модифицируем функцию getFilteredLooks, чтобы она учитывала новый поиск
+const originalGetFilteredLooks = getFilteredLooks;
+getFilteredLooks = function() {
+    let f = originalGetFilteredLooks(); // Получаем уже отфильтрованный по тегам список
+    
+    if (lookItemSearchQuery) {
+        f = f.filter(look => {
+            // Извлекаем имена вещей из образа
+            const names = extractNames(look.items);
+            // Проверяем, содержит ли какое-либо имя поисковый запрос
+            return names.some(name => name.toLowerCase().includes(lookItemSearchQuery));
+        });
+    }
+    return f;
+};
+</script>
+</body>
+</html>
