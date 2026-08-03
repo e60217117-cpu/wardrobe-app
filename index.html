@@ -2118,9 +2118,6 @@ function openEditItemModal() {
     editItemState = {
         status: item.status || '',
         place: item.place || '',
-        category: item.category || '', // НОВОЕ
-        type: item.type || '',         // НОВОЕ
-        color: item.color || '',       // НОВОЕ
         tags: [...(item.tags || [])]
     };
     
@@ -2167,16 +2164,6 @@ container.appendChild(marksSection);
     // 6. Место (радио-кнопки, обязательно)
     const placeSection = createRadioSection('Место *', Object.entries(placeNames).map(([id,name])=>({id,name})), editItemState.place, 'place');
     container.appendChild(placeSection);
-    // === НОВЫЕ ОБЯЗАТЕЛЬНЫЕ ПОЛЯ ===
-    const catSection = createRadioSection('Категория *', Object.entries(catNames).map(([id,name])=>({id,name})), editItemState.category, 'category');
-    container.appendChild(catSection);
-
-    const typeSection = createRadioSection('Тип *', Object.entries(typeNames).map(([id,name])=>({id,name})), editItemState.type, 'type');
-    container.appendChild(typeSection);
-
-    const colorSection = createRadioSection('Цвет *', Object.entries(colorNames).map(([id,name])=>({id,name})), editItemState.color, 'color');
-    container.appendChild(colorSection);
-    // ==============================
 
     // === СЕКЦИЯ КОММЕНТАРИЯ ===
     const commentSection = document.createElement('div');
@@ -2197,13 +2184,161 @@ container.appendChild(marksSection);
     validateEditItemForm();
 }
 
+function createCheckboxSection(title, items, currentTags, isExclusive=false) {
+    const section = document.createElement('div');
+    section.className = 'edit-item-section';
+    section.innerHTML = `<div class="edit-item-title">${title}</div><div class="edit-item-grid"></div>`;
+    const grid = section.querySelector('.edit-item-grid');
+    
+    items.forEach(item => {
+        const isChecked = currentTags.includes(item.id);
+        const label = document.createElement('label');
+        label.className = 'edit-tag-checkbox' + (isChecked ? ' checked' : '');
+        
+        label.onclick = () => {
+            const input = label.querySelector('input');
+            
+            if (isExclusive) {
+                // Логика взаимоисключения
+                if (item.id === 'LIKE_YES' && !input.checked) {
+                    const disLabel = grid.querySelector('[data-id="DISLIKE_NO"]');
+                    if(disLabel) { disLabel.classList.remove('checked'); disLabel.querySelector('input').checked = false; }
+                }
+                if (item.id === 'DISLIKE_NO' && !input.checked) {
+                    const likeLabel = grid.querySelector('[data-id="LIKE_YES"]');
+                    if(likeLabel) { likeLabel.classList.remove('checked'); likeLabel.querySelector('input').checked = false; }
+                }
+            }
+            
+            input.checked = !input.checked;
+            label.classList.toggle('checked', input.checked);
+            
+            // Обновляем состояние тегов
+            if (input.checked) {
+                if (!editItemState.tags.includes(item.id)) editItemState.tags.push(item.id);
+            } else {
+                editItemState.tags = editItemState.tags.filter(t => t !== item.id);
+            }
+        };
+        
+        label.dataset.id = item.id;
+        label.innerHTML = `
+            <input type="checkbox" value="${item.id}" ${isChecked ? 'checked' : ''}>
+            <span class="check-icon">✓</span>
+            <span>${item.name}</span>
+        `;
+        grid.appendChild(label);
+    });
+    
+    return section;
+}
 
+function createRadioSection(title, options, currentValue, stateKey) {
+    const section = document.createElement('div');
+    section.className = 'edit-item-section';
+    section.innerHTML = `<div class="edit-item-title">${title}</div><div class="edit-item-grid"></div>`;
+    const grid = section.querySelector('.edit-item-grid');
+    
+    options.forEach(opt => {
+        const isSelected = currentValue === opt.id;
+        const label = document.createElement('label');
+        label.className = 'edit-item-radio' + (isSelected ? ' selected' : '');
+        
+        label.onclick = () => {
+            // Снимаем выделение со всех радио в этой группе
+            grid.querySelectorAll('.edit-item-radio').forEach(r => r.classList.remove('selected'));
+            label.classList.add('selected');
+            label.querySelector('input').checked = true;
+            
+            // Обновляем состояние
+            editItemState[stateKey] = opt.id;
+            validateEditItemForm();
+        };
+        
+        label.innerHTML = `
+            <input type="radio" name="${stateKey}" value="${opt.id}" ${isSelected ? 'checked' : ''}>
+            <span class="radio-icon"></span>
+            <span>${opt.name}</span>
+        `;
+        grid.appendChild(label);
+    });
+    
+    return section;
+}
 
+function validateEditItemForm() {
+    const btn = document.getElementById('editItemSaveBtn');
+    const isValid = editItemState.status && editItemState.place;
+    btn.disabled = !isValid;
+}
 
+async function saveEditedItem() {
+    if (!currentEditItemName) return;
+    if (!editItemState.status || !editItemState.place) {
+        showToast('⚠️ Выберите статус и место!');
+        return;
+    }
+    
+    const saveBtn = document.getElementById('editItemSaveBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Сохраняю...';
+    
+    try {
+        // === ОБРАБОТКА КОММЕНТАРИЯ ПЕРЕД СОХРАНЕНИЕМ ===
+        const commentInput = document.getElementById('itemCommentInput');
+        const commentText = commentInput ? commentInput.value.trim() : '';
+        
+        // Удаляем старый комментарий
+        editItemState.tags = editItemState.tags.filter(t => !t.startsWith('NOTE_'));
+        
+        // Добавляем новый, если есть текст
+        if (commentText) {
+            editItemState.tags.push('NOTE_' + commentText);
+        }
+        // ==============================================
 
+        const res = await new Promise((resolve, reject) => {
+            google.script.run
+                .withSuccessHandler(resolve)
+                .withFailureHandler(reject)
+                .updateItemDetailsDirect(
+                    currentEditItemName, 
+                    editItemState.status, 
+                    editItemState.place, 
+                    editItemState.tags
+                );
+        });
 
-
-
+        if (res.error) {
+            showToast('❌ ' + res.error);
+        } else {
+            // 1. Обновляем локальные данные вещи
+            const item = data.find(i => i.name === currentEditItemName);
+            if (item) {
+                item.status = res.status;
+                item.place = res.place;
+                item.tags = res.tags; // Теперь здесь гарантированно актуальные теги с сервера
+            }
+            
+            // 2. ВАЖНО: Очищаем кэш, чтобы при следующем открытии взялись свежие данные
+            wardrobeCache.clear();
+            
+            // 3. Перерисовываем интерфейс
+            applyFilters(); 
+            showCurrentModalItem(); 
+            
+            showToast('✅ Вещь обновлена!');
+        }
+    } catch (err) {
+        console.error("Ошибка сохранения:", err);
+        showToast(' Ошибка соединения с таблицей');
+    } finally {
+        // ВСЕГДА закрываем окно и разблокируем кнопку
+        closeEditItemModal();
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Сохранить';
+    }
+}
 // === УНИВЕРСАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ===
 
 // Закрыть окно
@@ -2289,7 +2424,25 @@ function executeUniversalAction() {
     
     closeUniversalConfirm();
 }
+let currentEditItemName = null;
+let editItemState = { status: '', place: '', tags: [] };
 
+function openEditItemModal() {
+    if (currentModalIndex === -1 || !filteredItemsCache[currentModalIndex]) return;
+    
+    const item = filteredItemsCache[currentModalIndex];
+    currentEditItemName = item.name;
+    
+    // Инициализируем состояние текущими данными
+    editItemState = {
+        status: item.status || '',
+        place: item.place || '',
+        tags: [...(item.tags || [])]
+    };
+    
+    renderEditItemForm();
+    document.getElementById('editItemOverlay').classList.add('open');
+}
 
 
 
@@ -2377,7 +2530,7 @@ function createRadioSection(title, options, currentValue, stateKey) {
 
 function validateEditItemForm() {
     const btn = document.getElementById('editItemSaveBtn');
-    const isValid = editItemState.status && editItemState.place && editItemState.category && editItemState.type && editItemState.color; // ✅ Новое
+    const isValid = editItemState.status && editItemState.place;
     btn.disabled = !isValid;
 }
 
@@ -2418,10 +2571,7 @@ async function saveEditedItem() {
                 .updateItemDetailsDirect(
                     currentEditItemName, 
                     editItemState.status, 
-                    editItemState.place,
-                    editItemState.category, // ✅ НОВОЕ
-                    editItemState.type,     // ✅ НОВОЕ
-                    editItemState.color,    // ✅ НОВОЕ 
+                    editItemState.place, 
                     editItemState.tags // Сюда передается обновленный массив с NOTE_
                 );
         });
@@ -2434,9 +2584,6 @@ async function saveEditedItem() {
             if (item) {
                 item.status = res.status;
                 item.place = res.place;
-                item.category = res.category; // ✅ НОВОЕ
-                item.type = res.type;         // ✅ НОВОЕ
-                item.color = res.color;       // ✅ НОВОЕ
                 item.tags = res.tags;
             }
             
