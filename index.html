@@ -2118,6 +2118,9 @@ function openEditItemModal() {
     editItemState = {
         status: item.status || '',
         place: item.place || '',
+        category: item.category || '', // НОВОЕ
+        type: item.type || '',         // НОВОЕ
+        color: item.color || '',       // НОВОЕ
         tags: [...(item.tags || [])]
     };
     
@@ -2164,6 +2167,16 @@ container.appendChild(marksSection);
     // 6. Место (радио-кнопки, обязательно)
     const placeSection = createRadioSection('Место *', Object.entries(placeNames).map(([id,name])=>({id,name})), editItemState.place, 'place');
     container.appendChild(placeSection);
+    // === НОВЫЕ ОБЯЗАТЕЛЬНЫЕ ПОЛЯ ===
+    const catSection = createRadioSection('Категория *', Object.entries(catNames).map(([id,name])=>({id,name})), editItemState.category, 'category');
+    container.appendChild(catSection);
+
+    const typeSection = createRadioSection('Тип *', Object.entries(typeNames).map(([id,name])=>({id,name})), editItemState.type, 'type');
+    container.appendChild(typeSection);
+
+    const colorSection = createRadioSection('Цвет *', Object.entries(colorNames).map(([id,name])=>({id,name})), editItemState.color, 'color');
+    container.appendChild(colorSection);
+    // ==============================
 
     // === СЕКЦИЯ КОММЕНТАРИЯ ===
     const commentSection = document.createElement('div');
@@ -2268,77 +2281,11 @@ function createRadioSection(title, options, currentValue, stateKey) {
 
 function validateEditItemForm() {
     const btn = document.getElementById('editItemSaveBtn');
-    const isValid = editItemState.status && editItemState.place;
+    const isValid = editItemState.status && editItemState.place && editItemState.category && editItemState.type && editItemState.color;
     btn.disabled = !isValid;
 }
 
-async function saveEditedItem() {
-    if (!currentEditItemName) return;
-    if (!editItemState.status || !editItemState.place) {
-        showToast('⚠️ Выберите статус и место!');
-        return;
-    }
-    
-    const saveBtn = document.getElementById('editItemSaveBtn');
-    saveBtn.disabled = true;
-    saveBtn.textContent = 'Сохраняю...';
-    
-    try {
-        // === ОБРАБОТКА КОММЕНТАРИЯ ПЕРЕД СОХРАНЕНИЕМ ===
-        const commentInput = document.getElementById('itemCommentInput');
-        const commentText = commentInput ? commentInput.value.trim() : '';
-        
-        // Удаляем старый комментарий
-        editItemState.tags = editItemState.tags.filter(t => !t.startsWith('NOTE_'));
-        
-        // Добавляем новый, если есть текст
-        if (commentText) {
-            editItemState.tags.push('NOTE_' + commentText);
-        }
-        // ==============================================
 
-        const res = await new Promise((resolve, reject) => {
-            google.script.run
-                .withSuccessHandler(resolve)
-                .withFailureHandler(reject)
-                .updateItemDetailsDirect(
-                    currentEditItemName, 
-                    editItemState.status, 
-                    editItemState.place, 
-                    editItemState.tags
-                );
-        });
-
-        if (res.error) {
-            showToast('❌ ' + res.error);
-        } else {
-            // 1. Обновляем локальные данные вещи
-            const item = data.find(i => i.name === currentEditItemName);
-            if (item) {
-                item.status = res.status;
-                item.place = res.place;
-                item.tags = res.tags; // Теперь здесь гарантированно актуальные теги с сервера
-            }
-            
-            // 2. ВАЖНО: Очищаем кэш, чтобы при следующем открытии взялись свежие данные
-            wardrobeCache.clear();
-            
-            // 3. Перерисовываем интерфейс
-            applyFilters(); 
-            showCurrentModalItem(); 
-            
-            showToast('✅ Вещь обновлена!');
-        }
-    } catch (err) {
-        console.error("Ошибка сохранения:", err);
-        showToast(' Ошибка соединения с таблицей');
-    } finally {
-        // ВСЕГДА закрываем окно и разблокируем кнопку
-        closeEditItemModal();
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'Сохранить';
-    }
-}
 // === УНИВЕРСАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ===
 
 // Закрыть окно
@@ -2424,25 +2371,7 @@ function executeUniversalAction() {
     
     closeUniversalConfirm();
 }
-let currentEditItemName = null;
-let editItemState = { status: '', place: '', tags: [] };
 
-function openEditItemModal() {
-    if (currentModalIndex === -1 || !filteredItemsCache[currentModalIndex]) return;
-    
-    const item = filteredItemsCache[currentModalIndex];
-    currentEditItemName = item.name;
-    
-    // Инициализируем состояние текущими данными
-    editItemState = {
-        status: item.status || '',
-        place: item.place || '',
-        tags: [...(item.tags || [])]
-    };
-    
-    renderEditItemForm();
-    document.getElementById('editItemOverlay').classList.add('open');
-}
 
 
 
@@ -2530,7 +2459,7 @@ function createRadioSection(title, options, currentValue, stateKey) {
 
 function validateEditItemForm() {
     const btn = document.getElementById('editItemSaveBtn');
-    const isValid = editItemState.status && editItemState.place;
+    const isValid = editItemState.status && editItemState.place && editItemState.category && editItemState.type && editItemState.color;
     btn.disabled = !isValid;
 }
 
@@ -2541,64 +2470,87 @@ function closeEditItemModal() {
 
 async function saveEditedItem() {
     if (!currentEditItemName) return;
-    if (!editItemState.status || !editItemState.place) {
-        showToast('️ Выберите статус и место!');
+    
+    // Проверка всех обязательных полей
+    if (!editItemState.status || !editItemState.place || !editItemState.category || !editItemState.type || !editItemState.color) {
+        showToast('⚠️ Заполните все обязательные поля!');
         return;
     }
-    
+
     const saveBtn = document.getElementById('editItemSaveBtn');
     saveBtn.disabled = true;
     saveBtn.textContent = 'Сохраняю...';
-    
+
+    // Обработка комментария
+    const commentInput = document.getElementById('itemCommentInput');
+    const commentText = commentInput ? commentInput.value.trim() : '';
+    editItemState.tags = editItemState.tags.filter(t => !t.startsWith('NOTE_'));
+    if (commentText) editItemState.tags.push('NOTE_' + commentText);
+
     try {
-        // === ОБРАБОТКА КОММЕНТАРИЯ ПЕРЕД СОХРАНЕНИЕМ ===
-        const commentInput = document.getElementById('itemCommentInput');
-        const commentText = commentInput ? commentInput.value.trim() : '';
-        
-        // Удаляем старый комментарий из массива тегов
-        editItemState.tags = editItemState.tags.filter(t => !t.startsWith('NOTE_'));
-        
-        // Добавляем новый, если поле не пустое
-        if (commentText) {
-            editItemState.tags.push('NOTE_' + commentText);
+        let res;
+
+        // ОПРЕДЕЛЯЕМ ГДЕ МЫ ЗАПУЩЕНЫ
+        if (typeof google !== 'undefined' && google.script) {
+            // === ВАРИАНТ А: Внутри Google Apps Script ===
+            res = await new Promise((resolve, reject) => {
+                google.script.run
+                    .withSuccessHandler(resolve)
+                    .withFailureHandler(reject)
+                    .updateItemDetailsDirect(
+                        currentEditItemName,
+                        editItemState.status,
+                        editItemState.place,
+                        editItemState.category,
+                        editItemState.type,
+                        editItemState.color,
+                        editItemState.tags
+                    );
+            });
+        } else {
+            // === ВАРИАНТ Б: На GitHub Pages (через fetch) ===
+            const payload = {
+                action: 'updateItem',
+                itemName: currentEditItemName,
+                status: editItemState.status,
+                place: editItemState.place,
+                category: editItemState.category,
+                type: editItemState.type,
+                color: editItemState.color,
+                tags: editItemState.tags
+            };
+
+            const response = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            res = await response.json();
         }
-        // ==============================================
 
-        const res = await new Promise((resolve, reject) => {
-            google.script.run
-                .withSuccessHandler(resolve)
-                .withFailureHandler(reject)
-                .updateItemDetailsDirect(
-                    currentEditItemName, 
-                    editItemState.status, 
-                    editItemState.place, 
-                    editItemState.tags // Сюда передается обновленный массив с NOTE_
-                );
-        });
-
+        // ОБРАБОТКА РЕЗУЛЬТАТА (одинаковая для обоих вариантов)
         if (res.error) {
             showToast('❌ ' + res.error);
         } else {
-            // Обновляем локальные данные вещи
             const item = data.find(i => i.name === currentEditItemName);
             if (item) {
                 item.status = res.status;
                 item.place = res.place;
+                item.category = res.category;
+                item.type = res.type;
+                item.color = res.color;
                 item.tags = res.tags;
             }
-            
-            // Очищаем кэш для корректного отображения при следующем открытии
             wardrobeCache.clear();
-            
-            // Перерисовываем интерфейс
-            applyFilters(); 
-            showCurrentModalItem(); 
-            
+            applyFilters();
+            showCurrentModalItem();
             showToast('✅ Вещь обновлена!');
         }
     } catch (err) {
         console.error("Ошибка сохранения:", err);
-        showToast(' Ошибка соединения с таблицей');
+        showToast('❌ Ошибка соединения: ' + err.message);
     } finally {
         closeEditItemModal();
         saveBtn.disabled = false;
