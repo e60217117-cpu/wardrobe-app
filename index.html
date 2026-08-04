@@ -2404,70 +2404,96 @@ function closeEditItemModal() {
 
 async function saveEditedItem() {
     if (!currentEditItemName) return;
-    if (!editItemState.status || !editItemState.place) {
-        showToast('️ Выберите статус и место!');
+    
+    // Проверка обязательных полей
+    if (!editItemState.status || !editItemState.place || !editItemState.category || !editItemState.type || !editItemState.color) {
+        showToast('⚠️ Заполните все обязательные поля (Статус, Место, Категория, Тип, Цвет)!');
         return;
     }
-    
+
     const saveBtn = document.getElementById('editItemSaveBtn');
     saveBtn.disabled = true;
     saveBtn.textContent = 'Сохраняю...';
-    
+
     try {
-        // === ОБРАБОТКА КОММЕНТАРИЯ ПЕРЕД СОХРАНЕНИЕМ ===
+        // === ОБРАБОТКА КОММЕНТАРИЯ ===
         const commentInput = document.getElementById('itemCommentInput');
         const commentText = commentInput ? commentInput.value.trim() : '';
         
         // Удаляем старый комментарий из массива тегов
         editItemState.tags = editItemState.tags.filter(t => !t.startsWith('NOTE_'));
-        
         // Добавляем новый, если поле не пустое
         if (commentText) {
             editItemState.tags.push('NOTE_' + commentText);
         }
-        // ==============================================
 
-        const res = await new Promise((resolve, reject) => {
-            google.script.run
-                .withSuccessHandler(resolve)
-                .withFailureHandler(reject)
-                .updateItemDetailsDirect(
-                    currentEditItemName, 
-                    editItemState.status, 
-                    editItemState.place,
-                    editItemState.category, // НОВОЕ
-                    editItemState.type,     // НОВОЕ
-                    editItemState.color,    // НОВОЕ 
-                    editItemState.tags // Сюда передается обновленный массив с NOTE_
-                );
-        });
+        let res;
 
+        // === ОПРЕДЕЛЯЕМ СРЕДУ ЗАПУСКА ===
+        if (typeof google !== 'undefined' && google.script) {
+            // --- ВАРИАНТ А: Мы внутри Google Apps Script ---
+            res = await new Promise((resolve, reject) => {
+                google.script.run
+                    .withSuccessHandler(resolve)
+                    .withFailureHandler(reject)
+                    .updateItemDetailsDirect(
+                        currentEditItemName,
+                        editItemState.status,
+                        editItemState.place,
+                        editItemState.category,
+                        editItemState.type,
+                        editItemState.color,
+                        editItemState.tags
+                    );
+            });
+        } else {
+            // --- ВАРИАНТ Б: Мы на GitHub Pages ---
+            const payload = {
+                action: 'updateItem',
+                itemName: currentEditItemName,
+                statusId: editItemState.status,
+                placeId: editItemState.place,
+                categoryId: editItemState.category,
+                typeId: editItemState.type,
+                colorId: editItemState.color,
+                tags: editItemState.tags
+            };
+
+            const response = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            res = await response.json();
+        }
+
+        // === ОБРАБОТКА ОТВЕТА ===
         if (res.error) {
             showToast('❌ ' + res.error);
         } else {
-            // Обновляем локальные данные вещи
+            // Обновляем локальные данные вещи в кэше
             const item = data.find(i => i.name === currentEditItemName);
             if (item) {
                 item.status = res.status;
                 item.place = res.place;
-                item.category = res.category; // НОВОЕ
-                item.type = res.type;         // НОВОЕ
-                item.color = res.color;       // НОВОЕ
+                item.category = res.category;
+                item.type = res.type;
+                item.color = res.color;
                 item.tags = res.tags;
             }
             
-            // Очищаем кэш для корректного отображения при следующем открытии
+            // Очищаем кэш localStorage, чтобы при следующей загрузке взять свежие данные
             wardrobeCache.clear();
             
             // Перерисовываем интерфейс
-            applyFilters(); 
-            showCurrentModalItem(); 
-            
-            showToast('✅ Вещь обновлена!');
+            applyFilters();
+            showCurrentModalItem();
+            showToast('✅ Вещь успешно обновлена!');
         }
     } catch (err) {
         console.error("Ошибка сохранения:", err);
-        showToast(' Ошибка соединения с таблицей');
+        showToast('❌ Ошибка соединения с таблицей: ' + err.message);
     } finally {
         closeEditItemModal();
         saveBtn.disabled = false;
