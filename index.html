@@ -1899,44 +1899,68 @@ renderLookList();// === НОВЫЕ ФУНКЦИИ ДЛЯ КНОПОК "НАПР�
 
 // 1. Функция для кнопки "В базу (напрямую)"
 // 1. В базу (напрямую) - ИСПРАВЛЕННАЯ
+// 1. В базу (напрямую) - УНИВЕРСАЛЬНАЯ ВЕРСИЯ
 async function addLookToDatabaseDirect(idx) {
     const look = savedLooks[idx];
-    if (!look) { showToast('⚠️ Образ не найден'); return; }
+    if (!look) { showToast('️ Образ не найден'); return; }
     
     showToast('⏳ Сохраняю в таблицу...');
     
     try {
-        // Вызываем серверную функцию
-        google.script.run
-            .withSuccessHandler(function(response) {
-                if (response.error) {
-                    showToast('❌ Ошибка: ' + response.error);
-                } else {
-                    if (response.alreadyExists) {
-                        showToast('ℹ️ Такой образ уже есть в таблице');
-                    } else {
-                        showToast('✅ Образ сохранен в таблицу!');
-                    }
-                }
-                // Закрываем меню в любом случае
-                document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
-            })
-            .withFailureHandler(function(err) {
-                console.error("Ошибка GAS:", err);
-                showToast('❌ Ошибка соединения с сервером');
-                document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
-            })
-            .addLookToDatabase({
+        let response;
+        
+        // ОПРЕДЕЛЯЕМ СРЕДУ ЗАПУСКА
+        if (typeof google !== 'undefined' && google.script) {
+            // --- ВАРИАНТ А: Мы внутри Google Apps Script ---
+            response = await new Promise((resolve, reject) => {
+                google.script.run
+                    .withSuccessHandler(resolve)
+                    .withFailureHandler(reject)
+                    .addLookToDatabase({
+                        uniqueId: look.uniqueId,
+                        name: look.name,
+                        items: look.items,
+                        tags: look.tags || [],
+                        source: 'local_direct'
+                    });
+            });
+        } else {
+            // --- ВАРИАНТ Б: Мы на GitHub Pages ---
+            const payload = {
+                action: 'addLook',
                 uniqueId: look.uniqueId,
                 name: look.name,
-                items: look.items, // Отправляем как есть, сервер сам очистит
+                items: look.items,
                 tags: look.tags || [],
                 source: 'local_direct'
+            };
+            
+            const res = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
             });
-
+            
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            response = await res.json();
+        }
+        
+        // ОБРАБОТКА ОТВЕТА
+        if (response.error) {
+            showToast('❌ Ошибка: ' + response.error);
+        } else {
+            if (response.alreadyExists) {
+                showToast('ℹ️ Такой образ уже есть в таблице');
+            } else {
+                showToast('✅ Образ сохранен в таблицу!');
+            }
+        }
+        
+        document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
+        
     } catch (e) {
         console.error(e);
-        showToast('❌ Неожиданная ошибка');
+        showToast('❌ Ошибка соединения: ' + e.message);
+        document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
     }
 }
 
@@ -2072,55 +2096,100 @@ function closeEditTagsModal() {
     currentLookIdx = -1;
 }
 
+// === ЛОГИКА РЕДАКТИРОВАНИЯ ТЕГОВ ОБРАЗА (УНИВЕРСАЛЬНАЯ) ===
 async function saveEditedTags() {
     if (currentLookIdx === -1) return;
     
     const checkboxes = document.querySelectorAll('#editTagsContent input:checked');
     const newTags = Array.from(checkboxes).map(cb => cb.value);
-    
     const look = savedLooks[currentLookIdx];
+    
     showToast('⏳ Сохраняю образ и теги...');
     
-    // ШАГ 1: Сначала сохраняем/обновляем образ в Saved_Looks
-    google.script.run
-        .withSuccessHandler(function(saveRes) {
-            if (saveRes.error) {
-                showToast('❌ Ошибка сохранения образа: ' + saveRes.error);
-                return;
-            }
+    try {
+        let saveRes, tagRes;
+        
+        // ШАГ 1: Сохраняем/обновляем образ в Saved_Looks
+        if (typeof google !== 'undefined' && google.script) {
+            // --- GAS ---
+            saveRes = await new Promise((resolve, reject) => {
+                google.script.run
+                    .withSuccessHandler(resolve)
+                    .withFailureHandler(reject)
+                    .addLookToDatabase({
+                        uniqueId: look.uniqueId,
+                        name: look.name,
+                        items: look.items,
+                        tags: newTags,
+                        source: 'local_direct'
+                    });
+            });
+        } else {
+            // --- GitHub ---
+            const payload = {
+                action: 'addLook',
+                uniqueId: look.uniqueId,
+                name: look.name,
+                items: look.items,
+                tags: newTags,
+                source: 'local_direct'
+            };
             
-            // ШАГ 2: Если образ сохранился успешно, обновляем теги
-            google.script.run
-                .withSuccessHandler(function(tagRes) {
-                    if (tagRes.error) {
-                        showToast('❌ Образ сохранен, но ошибка тегов: ' + tagRes.error);
-                    } else {
-                        // Обновляем локальные данные
-                        look.tags = newTags;
-                        localStorage.setItem('saved_looks', JSON.stringify(savedLooks));
-                        renderLooksFullscreen();
-                        closeEditTagsModal();
-                        showToast('✅ Образ и теги обновлены!');
-                    }
-                })
-                .withFailureHandler(function(err) {
-                    showToast('❌ Образ сохранен, но ошибка тегов');
-                    console.error(err);
-                })
-                .updateLookTagsDirect(look.uniqueId, newTags);
-                
-        })
-        .withFailureHandler(function(err) {
-            showToast('❌ Ошибка сохранения образа');
-            console.error(err);
-        })
-        .addLookToDatabase({
-            uniqueId: look.uniqueId,
-            name: look.name,
-            items: look.items,
-            tags: newTags, // Передаем уже новые теги сразу
-            source: 'local_direct'
-        });
+            const res = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            saveRes = await res.json();
+        }
+        
+        if (saveRes.error) {
+            showToast('❌ Ошибка сохранения образа: ' + saveRes.error);
+            return;
+        }
+        
+        // ШАГ 2: Обновляем теги в Look_Tags
+        if (typeof google !== 'undefined' && google.script) {
+            // --- GAS ---
+            tagRes = await new Promise((resolve, reject) => {
+                google.script.run
+                    .withSuccessHandler(resolve)
+                    .withFailureHandler(reject)
+                    .updateLookTagsDirect(look.uniqueId, newTags);
+            });
+        } else {
+            // --- GitHub ---
+            const payload = {
+                action: 'updateLookTags',
+                lookId: look.uniqueId,
+                tags: newTags
+            };
+            
+            const res = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            tagRes = await res.json();
+        }
+        
+        if (tagRes.error) {
+            showToast('❌ Образ сохранен, но ошибка тегов: ' + tagRes.error);
+        } else {
+            // Обновляем локальные данные
+            look.tags = newTags;
+            localStorage.setItem('saved_looks', JSON.stringify(savedLooks));
+            renderLooksFullscreen();
+            closeEditTagsModal();
+            showToast('✅ Образ и теги обновлены!');
+        }
+        
+    } catch (err) {
+        console.error(err);
+        showToast('❌ Ошибка соединения: ' + err.message);
+    }
 }// === ЛОГИКА РЕДАКТИРОВАНИЯ ВЕЩИ ===// === ЛОГИКА РЕДАКТИРОВАНИЯ ВЕЩИ ===
 
 
@@ -2261,32 +2330,57 @@ function executeUniversalAction() {
         showToast(`️ "${look.name}" удалён`);
     }
     // 5. Удаление из базы данных (НОВОЕ!)
-    else if (action === 'deleteDbLook') {
-        const look = savedLooks[idx];
-        showToast('🗑️ Удаляю из таблицы...');
+    // 5. Удаление из базы данных (УНИВЕРСАЛЬНОЕ!)
+else if (action === 'deleteDbLook') {
+    const look = savedLooks[idx];
+    showToast('🗑️ Удаляю из таблицы...');
+    
+    try {
+        let response;
         
-        google.script.run
-            .withSuccessHandler(function(response) {
-                if (response.error) {
-                    showToast('❌ Ошибка: ' + response.error);
-                } else {
-                    showToast('✅ Образ удален из таблицы!');
-                    // Удаляем и локально тоже, чтобы не висел "призрак"
-                    savedLooks.splice(idx, 1);
-                    localStorage.setItem('saved_looks', JSON.stringify(savedLooks));
-                    renderLooksFullscreen();
-                }
-                closeUniversalConfirm();
-            })
-            .withFailureHandler(function(err) {
-                showToast('❌ Ошибка соединения');
-                closeUniversalConfirm();
-            })
-            .removeLookFromDatabase(look.uniqueId);
+        if (typeof google !== 'undefined' && google.script) {
+            // --- ВАРИАНТ А: GAS ---
+            response = await new Promise((resolve, reject) => {
+                google.script.run
+                    .withSuccessHandler(resolve)
+                    .withFailureHandler(reject)
+                    .removeLookFromDatabase(look.uniqueId);
+            });
+        } else {
+            // --- ВАРИАНТ Б: GitHub ---
+            const payload = {
+                action: 'removeLook',
+                lookId: look.uniqueId
+            };
             
-        // Не закрываем окно сразу, ждем ответа сервера
-        return; 
+            const res = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            response = await res.json();
+        }
+        
+        if (response.error) {
+            showToast('❌ Ошибка: ' + response.error);
+        } else {
+            showToast('✅ Образ удален из таблицы!');
+            // Удаляем и локально
+            savedLooks.splice(idx, 1);
+            localStorage.setItem('saved_looks', JSON.stringify(savedLooks));
+            renderLooksFullscreen();
+        }
+        
+        closeUniversalConfirm();
+        
+    } catch (err) {
+        console.error(err);
+        showToast('❌ Ошибка соединения: ' + err.message);
+        closeUniversalConfirm();
     }
+    return;
+}
     // 6. Копирование команды удаления для Бота (НОВОЕ!)
     else if (action === 'copyBotDeleteCmd') {
         const look = savedLooks[idx];
