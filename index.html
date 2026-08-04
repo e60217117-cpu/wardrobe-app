@@ -1982,47 +1982,76 @@ function removeLookFromDatabaseDirect(idx) {
 
 // 3. Функция для кнопок "В избранное" и "Убрать из избранного"
 // 3. В избранное / Убрать из избранного (напрямую) - ИСПРАВЛЕННАЯ
+// 3. В избранное / Убрать из избранного (УНИВЕРСАЛЬНАЯ ВЕРСИЯ)
 async function setLookFavoriteDirect(idx, isFavorite) {
     const look = savedLooks[idx];
-    if (!look) { showToast('⚠️ Образ не найден'); return; }
-    if (!look.uniqueId) { showToast('⚠️ У этого образа нет ID для таблицы'); return; }
+    if (!look) { showToast('️ Образ не найден'); return; }
+    if (!look.uniqueId) { showToast('️ У этого образа нет ID для таблицы'); return; }
 
     showToast(isFavorite ? '⭐ Добавляю в избранное...' : '❌ Убираю из избранного...');
 
-    google.script.run
-        .withSuccessHandler(function(response) {
-            if (response.error) {
-                showToast('❌ Ошибка таблицы: ' + response.error);
-            } else {
-                // 1. Обновляем ЛОКАЛЬНУЮ память (чтобы галочка изменилась на экране)
-                if (isFavorite) {
-                    if (!look.tags) look.tags = [];
-                    if (!look.tags.includes('OLIKE_FAV')) {
-                        look.tags.push('OLIKE_FAV');
-                    }
-                } else {
-                    if (look.tags) {
-                        look.tags = look.tags.filter(t => t !== 'OLIKE_FAV');
-                    }
-                }
-                
-                // Сохраняем обновленный список образов в память браузера
-                localStorage.setItem('saved_looks', JSON.stringify(savedLooks));
+    try {
+        let response;
 
-                // 2. Обновляем интерфейс (перерисовываем список)
-                renderLooksFullscreen();
-                
-                showToast(response.message || (isFavorite ? '✅ В избранном' : '✅ Не в избранном'));
+        // ОПРЕДЕЛЯЕМ СРЕДУ ЗАПУСКА
+        if (typeof google !== 'undefined' && google.script) {
+            // --- ВАРИАНТ А: Мы внутри Google Apps Script ---
+            response = await new Promise((resolve, reject) => {
+                google.script.run
+                    .withSuccessHandler(resolve)
+                    .withFailureHandler(reject)
+                    .updateLookFavoriteInTable(look.uniqueId, isFavorite);
+            });
+        } else {
+            // --- ВАРИАНТ Б: Мы на GitHub Pages ---
+            const payload = {
+                action: 'updateLookFavorite',
+                lookId: look.uniqueId,
+                isFavorite: isFavorite
+            };
+
+            const res = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            response = await res.json();
+        }
+
+        // ОБРАБОТКА ОТВЕТА
+        if (response.error) {
+            showToast(' Ошибка таблицы: ' + response.error);
+        } else {
+            // 1. Обновляем ЛОКАЛЬНУЮ память (чтобы галочка изменилась на экране)
+            if (isFavorite) {
+                if (!look.tags) look.tags = [];
+                if (!look.tags.includes('OLIKE_FAV')) {
+                    look.tags.push('OLIKE_FAV');
+                }
+            } else {
+                if (look.tags) {
+                    look.tags = look.tags.filter(t => t !== 'OLIKE_FAV');
+                }
             }
-            // Закрываем меню в любом случае
-            document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
-        })
-        .withFailureHandler(function(err) {
-            console.error("Ошибка GAS:", err);
-            showToast('❌ Ошибка соединения с сервером');
-            document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
-        })
-        .updateLookFavoriteInTable(look.uniqueId, isFavorite);
+            
+            // Сохраняем обновленный список образов в память браузера
+            localStorage.setItem('saved_looks', JSON.stringify(savedLooks));
+            
+            // 2. Обновляем интерфейс (перерисовываем список)
+            renderLooksFullscreen();
+            
+            showToast(response.message || (isFavorite ? '✅ В избранном' : '✅ Не в избранном'));
+        }
+        
+        // Закрываем меню в любом случае
+        document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
+
+    } catch (e) {
+        console.error(e);
+        showToast('❌ Ошибка соединения: ' + e.message);
+        document.querySelectorAll('.looks-actions-menu-inline').forEach(m => m.classList.remove('open'));
+    }
 }// === ЛОГИКА РЕДАКТИРОВАНИЯ ТЕГОВ ОБРАЗА ===
 let currentLookIdx = -1;
 
