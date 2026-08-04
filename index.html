@@ -2300,7 +2300,7 @@ function closeUniversalConfirm() {
 }
 
 // Выполнить действие при нажатии "Подтвердить"
-function executeUniversalAction() {
+async function executeUniversalAction() { // <--- ДОБАВЬ СЛОВО async
     const action = document.getElementById('universalConfirmAction').value;
     const idx = parseInt(document.getElementById('universalConfirmIdx').value);
     
