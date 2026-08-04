@@ -1900,6 +1900,7 @@ renderLookList();// === НОВЫЕ ФУНКЦИИ ДЛЯ КНОПОК "НАПР�
 // 1. Функция для кнопки "В базу (напрямую)"
 // 1. В базу (напрямую) - ИСПРАВЛЕННАЯ
 // 1. В базу (напрямую) - УНИВЕРСАЛЬНАЯ ВЕРСИЯ
+// 1. В базу (напрямую) - ИСПРАВЛЕННАЯ С ASYNC
 async function addLookToDatabaseDirect(idx) {
     const look = savedLooks[idx];
     if (!look) { showToast('️ Образ не найден'); return; }
@@ -1949,7 +1950,7 @@ async function addLookToDatabaseDirect(idx) {
             showToast('❌ Ошибка: ' + response.error);
         } else {
             if (response.alreadyExists) {
-                showToast('ℹ️ Такой образ уже есть в таблице');
+                showToast('️ Такой образ уже есть в таблице');
             } else {
                 showToast('✅ Образ сохранен в таблицу!');
             }
@@ -2097,6 +2098,7 @@ function closeEditTagsModal() {
 }
 
 // === ЛОГИКА РЕДАКТИРОВАНИЯ ТЕГОВ ОБРАЗА (УНИВЕРСАЛЬНАЯ) ===
+// === ЛОГИКА РЕДАКТИРОВАНИЯ ТЕГОВ ОБРАЗА (УНИВЕРСАЛЬНАЯ С ASYNC) ===
 async function saveEditedTags() {
     if (currentLookIdx === -1) return;
     
@@ -2190,7 +2192,8 @@ async function saveEditedTags() {
         console.error(err);
         showToast('❌ Ошибка соединения: ' + err.message);
     }
-}// === ЛОГИКА РЕДАКТИРОВАНИЯ ВЕЩИ ===// === ЛОГИКА РЕДАКТИРОВАНИЯ ВЕЩИ ===
+}
+// === ЛОГИКА РЕДАКТИРОВАНИЯ ВЕЩИ ===// === ЛОГИКА РЕДАКТИРОВАНИЯ ВЕЩИ ===
 
 
 function openEditItemModal() {
@@ -2331,9 +2334,10 @@ function executeUniversalAction() {
     }
     // 5. Удаление из базы данных (НОВОЕ!)
     // 5. Удаление из базы данных (УНИВЕРСАЛЬНОЕ!)
+// 5. Удаление из базы данных (УНИВЕРСАЛЬНОЕ!)
 else if (action === 'deleteDbLook') {
     const look = savedLooks[idx];
-    showToast('🗑️ Удаляю из таблицы...');
+    showToast('️ Удаляю из таблицы...');
     
     try {
         let response;
