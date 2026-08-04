@@ -840,10 +840,26 @@ async function fetchAllItems() {
                     .getWardrobeData();
             });
         } else {
-            // === ВАРИАНТ Б: Мы на GitHub Pages (или любом другом хостинге) ===
-            const res = await fetch(GAS_WEB_APP_URL + '?action=getWardrobeData');
-            if (!res.ok) throw new Error(`Ошибка сети: ${res.status}`);
-            response = await res.json();
+            // === ВАРИАНТ Б: Мы на GitHub Pages ===
+// Важно: mode: 'cors' не поддерживается GAS напрямую для JSON, 
+// но redirect: 'follow' обязателен, так как GAS делает редирект.
+const res = await fetch(GAS_WEB_APP_URL + '?action=getWardrobeData', {
+    method: 'GET',
+    redirect: 'follow'
+});
+
+// GAS иногда возвращает opaque response при ошибке CORS, 
+// но с redirect: 'follow' обычно отдает JSON.
+if (!res.ok) throw new Error(`Ошибка сети: ${res.status}`);
+
+// Дополнительная проверка: иногда GAS возвращает HTML ошибку вместо JSON
+const text = await res.text();
+try {
+    response = JSON.parse(text);
+} catch (e) {
+    console.error("Ответ не JSON:", text);
+    throw new Error("Сервер вернул некорректный формат данных");
+}
         }
 
         // ОБРАБОТКА ОТВЕТА (одинаковая для обоих вариантов)
