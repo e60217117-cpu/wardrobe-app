@@ -2312,10 +2312,10 @@ container.appendChild(marksSection);
     const catSection = createRadioSection('Категория *', Object.entries(catNames).map(([id,name])=>({id,name})), editItemState.category, 'category');
     container.appendChild(catSection);
 
-    const typeSection = createRadioSection('Тип *', Object.entries(typeNames).map(([id,name])=>({id,name})), editItemState.type, 'type');
+    const typeSection = createRadioSection('Тип *', Object.entries(typeNames).map(([id,name])=>({id,name})).sort((a,b)=>a.name.localeCompare(b.name)), editItemState.type, 'type');
     container.appendChild(typeSection);
 
-    const colorSection = createRadioSection('Цвет *', Object.entries(colorNames).map(([id,name])=>({id,name})), editItemState.color, 'color');
+    const colorSection = createRadioSection('Цвет *', Object.entries(colorNames).map(([id,name])=>({id,name})).sort((a,b)=>a.name.localeCompare(b.name)), editItemState.color, 'color');
     container.appendChild(colorSection);
     // ==============================
 
